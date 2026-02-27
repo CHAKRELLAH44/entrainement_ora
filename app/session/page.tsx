@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Timer from "@/components/Timer";
 import RatingSlider from "@/components/RatingSlider";
@@ -15,6 +15,30 @@ function getMessage(note: number): { emoji: string; msg: string } {
   return { emoji: "💪", msg: "Chaque jour compte. Continue a pratiquer." };
 }
 
+function getSupportedMimeType(): string {
+  const types = [
+    "audio/webm;codecs=opus",
+    "audio/webm",
+    "audio/mp4",
+    "audio/mpeg",
+    "audio/ogg;codecs=opus",
+    "audio/ogg",
+  ];
+  for (const type of types) {
+    if (MediaRecorder.isTypeSupported(type)) {
+      return type;
+    }
+  }
+  return "";
+}
+
+function getFileExtension(mimeType: string): string {
+  if (mimeType.includes("mp4")) return "mp4";
+  if (mimeType.includes("ogg")) return "ogg";
+  if (mimeType.includes("mpeg")) return "mp3";
+  return "webm";
+}
+
 export default function SessionPage() {
   const router = useRouter();
   const [step, setStep] = useState<Step>("topic");
@@ -22,6 +46,7 @@ export default function SessionPage() {
   const [loading, setLoading] = useState(false);
   const [note, setNote] = useState(7);
   const [audioPreviewUrl, setAudioPreviewUrl] = useState<string | null>(null);
+  const [mimeType, setMimeType] = useState<string>("");
   const audioBlobRef = useRef<Blob | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -34,28 +59,42 @@ export default function SessionPage() {
       const data = await res.json();
       setTopic(data.topic);
     } catch {
-      setTopic("Decris ta ville ideale");
+      setTopic("chno houwa l holm dialk ?");
     } finally {
       setLoading(false);
     }
   }
 
   async function startSpeaking() {
-    // Démarrer le micro
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          sampleRate: 44100,
+        }
+      });
       streamRef.current = stream;
       chunksRef.current = [];
 
-      const recorder = new MediaRecorder(stream);
+      const supported = getSupportedMimeType();
+      setMimeType(supported);
+
+      const recorder = supported
+        ? new MediaRecorder(stream, { mimeType: supported })
+        : new MediaRecorder(stream);
+
       mediaRecorderRef.current = recorder;
 
       recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
+        if (e.data && e.data.size > 0) {
+          chunksRef.current.push(e.data);
+        }
       };
 
       recorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+        const finalMime = supported || "audio/webm";
+        const blob = new Blob(chunksRef.current, { type: finalMime });
         audioBlobRef.current = blob;
         const url = URL.createObjectURL(blob);
         setAudioPreviewUrl(url);
@@ -63,9 +102,9 @@ export default function SessionPage() {
         setStep("review");
       };
 
-      recorder.start(100); // chunk toutes les 100ms
-    } catch {
-      // Micro non dispo, on passe quand meme
+      recorder.start(250);
+    } catch (err) {
+      console.error("Micro error:", err);
       setStep("review");
     }
 
@@ -76,7 +115,6 @@ export default function SessionPage() {
     const recorder = mediaRecorderRef.current;
     if (recorder && recorder.state === "recording") {
       recorder.stop();
-      // onstop appellera setStep("review")
     } else {
       setStep("review");
     }
@@ -86,10 +124,16 @@ export default function SessionPage() {
     setStep("saving");
     const user = getCurrentUser() || "default";
     const sessionId = Date.now().toString();
+    const ext = getFileExtension(mimeType);
 
     let audioUrl: string | null = null;
     if (audioBlobRef.current) {
-      audioUrl = await uploadAudio(audioBlobRef.current, sessionId, user);
+      audioUrl = await uploadAudio(
+        audioBlobRef.current,
+        sessionId,
+        user,
+        ext
+      );
     }
 
     const session: Session = {
@@ -116,7 +160,6 @@ export default function SessionPage() {
   return (
     <div className="page-wrapper">
 
-      {/* ---- STEP : topic ---- */}
       {step === "topic" && (
         <div className="card">
           <div className="nav-top">
@@ -145,7 +188,6 @@ export default function SessionPage() {
         </div>
       )}
 
-      {/* ---- STEP : think ---- */}
       {step === "think" && (
         <div className="card" style={{ textAlign: "center" }}>
           <div className="chip">Reflexion</div>
@@ -162,7 +204,6 @@ export default function SessionPage() {
         </div>
       )}
 
-      {/* ---- STEP : speak ---- */}
       {step === "speak" && (
         <div className="card" style={{ textAlign: "center" }}>
           <div className="chip">Parole</div>
@@ -182,7 +223,6 @@ export default function SessionPage() {
         </div>
       )}
 
-      {/* ---- STEP : review ---- */}
       {step === "review" && (
         <div className="card">
           <div className="chip">Bilan</div>
@@ -194,7 +234,13 @@ export default function SessionPage() {
           {audioPreviewUrl ? (
             <>
               <p className="audio-label">🎧 Reecouter</p>
-              <audio className="audio-player" controls src={audioPreviewUrl} />
+              <audio
+                className="audio-player"
+                controls
+                playsInline
+                preload="auto"
+                src={audioPreviewUrl}
+              />
             </>
           ) : (
             <p style={{ fontSize: "0.85rem", color: "var(--muted)" }}>
@@ -208,7 +254,6 @@ export default function SessionPage() {
         </div>
       )}
 
-      {/* ---- STEP : saving ---- */}
       {step === "saving" && (
         <div className="card" style={{ textAlign: "center" }}>
           <div className="chip">Sauvegarde</div>
@@ -217,7 +262,6 @@ export default function SessionPage() {
         </div>
       )}
 
-      {/* ---- STEP : result ---- */}
       {step === "result" && (
         <div className="card" style={{ textAlign: "center" }}>
           <div className="chip">Termine</div>

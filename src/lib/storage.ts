@@ -36,20 +36,19 @@ export async function checkUserAllowed(nickname: string): Promise<boolean> {
 export async function uploadAudio(
   blob: Blob,
   sessionId: string,
-  userNickname: string
+  userNickname: string,
+  ext: string = "webm"
 ): Promise<string | null> {
-  const fileName = `${userNickname}/${sessionId}.webm`;
+  const fileName = `${userNickname}/${sessionId}.${ext}`;
 
-  // Supprimer l'ancien fichier si existe
   await supabase.storage
     .from("audio-sessions")
     .remove([fileName]);
 
-  // Uploader le nouveau
   const { error } = await supabase.storage
     .from("audio-sessions")
     .upload(fileName, blob, {
-      contentType: "audio/webm",
+      contentType: blob.type || "audio/webm",
       upsert: true,
       cacheControl: "3600",
     });
@@ -59,12 +58,10 @@ export async function uploadAudio(
     return null;
   }
 
-  // Récupérer l'URL publique
   const { data: urlData } = supabase.storage
     .from("audio-sessions")
     .getPublicUrl(fileName);
 
-  console.log("Audio URL:", urlData.publicUrl);
   return urlData.publicUrl;
 }
 

@@ -6,4 +6,5 @@ export interface Session {
   audioUrl: string | null;
   timestamp: number;
   userNickname: string;
+  correction: string | null;
 }

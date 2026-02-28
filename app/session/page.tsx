@@ -4,10 +4,18 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Timer from "@/components/Timer";
 import RatingSlider from "@/components/RatingSlider";
-import { saveSession, setLastSessionTimestamp, getCurrentUser, uploadAudio } from "@/lib/storage";
+import {
+  saveSession,
+  setLastSessionTimestamp,
+  getCurrentUser,
+  uploadAudio,
+} from "@/lib/storage";
 import { Session } from "@/types/session";
 
 type Step = "topic" | "think" | "speak" | "review" | "saving" | "result";
+
+const TIMER_OPTIONS = [5,10, 20, 30, 45, 60];
+const THINK_OPTIONS = [5, 10, 20, 30, 45, 60];
 
 function getMessage(note: number): { emoji: string; msg: string } {
   if (note >= 8) return { emoji: "👏", msg: "Excellent travail ! Continue ainsi." };
@@ -25,7 +33,7 @@ function getSupportedMimeType(): string {
     "audio/ogg",
   ];
   for (const type of types) {
-    if (MediaRecorder.isTypeSupported(type)) {
+    if (typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(type)) {
       return type;
     }
   }
@@ -45,8 +53,14 @@ export default function SessionPage() {
   const [topic, setTopic] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [note, setNote] = useState(7);
+  const [speakDuration, setSpeakDuration] = useState(60);
+  const [thinkDuration, setThinkDuration] = useState(60);
   const [audioPreviewUrl, setAudioPreviewUrl] = useState<string | null>(null);
   const [mimeType, setMimeType] = useState<string>("");
+  const [transcription, setTranscription] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [loadingFeedback, setLoadingFeedback] = useState(false);
+  const [showCorrection, setShowCorrection] = useState(false);
   const audioBlobRef = useRef<Blob | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -72,7 +86,7 @@ export default function SessionPage() {
           echoCancellation: true,
           noiseSuppression: true,
           sampleRate: 44100,
-        }
+        },
       });
       streamRef.current = stream;
       chunksRef.current = [];
@@ -128,12 +142,29 @@ export default function SessionPage() {
 
     let audioUrl: string | null = null;
     if (audioBlobRef.current) {
-      audioUrl = await uploadAudio(
-        audioBlobRef.current,
-        sessionId,
-        user,
-        ext
-      );
+      audioUrl = await uploadAudio(audioBlobRef.current, sessionId, user, ext);
+    }
+
+    let transcriptionText: string | null = null;
+    if (audioBlobRef.current) {
+      try {
+        const formData = new FormData();
+        const audioFile = new File(
+          [audioBlobRef.current],
+          `audio.${ext}`,
+          { type: audioBlobRef.current.type }
+        );
+        formData.append("audio", audioFile);
+        const res = await fetch("/api/transcribe", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await res.json();
+        transcriptionText = data.text || null;
+        setTranscription(transcriptionText);
+      } catch {
+        transcriptionText = null;
+      }
     }
 
     const session: Session = {
@@ -152,7 +183,23 @@ export default function SessionPage() {
 
     await saveSession(session);
     setLastSessionTimestamp();
+
+    setLoadingFeedback(true);
     setStep("result");
+
+    try {
+      const res = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transcription: transcriptionText }),
+      });
+      const data = await res.json();
+      setFeedback(data.feedback);
+    } catch {
+      setFeedback(null);
+    } finally {
+      setLoadingFeedback(false);
+    }
   }
 
   const { emoji, msg } = getMessage(note);
@@ -160,6 +207,7 @@ export default function SessionPage() {
   return (
     <div className="page-wrapper">
 
+      {/* ---- STEP : topic ---- */}
       {step === "topic" && (
         <div className="card">
           <div className="nav-top">
@@ -174,12 +222,94 @@ export default function SessionPage() {
           <button className="btn btn-outline" onClick={rollTopic} disabled={loading}>
             {loading ? "..." : "🎲 Lancer le de"}
           </button>
+
           {topic && (
             <>
               <div className="topic-box">
                 <div className="label">🎤 Sujet du jour</div>
                 <div className="text">{topic}</div>
               </div>
+
+              {/* Choix duree reflexion */}
+              <div style={{ margin: "1.25rem 0" }}>
+                <p style={{
+                  fontSize: "0.75rem",
+                  fontWeight: "700",
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  color: "var(--muted)",
+                  marginBottom: "0.75rem",
+                }}>
+                  🧠 Temps de reflexion
+                </p>
+                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                  {THINK_OPTIONS.map((sec) => (
+                    <button
+                      key={sec}
+                      onClick={() => setThinkDuration(sec)}
+                      style={{
+                        padding: "0.5rem 1rem",
+                        borderRadius: "100px",
+                        border: thinkDuration === sec
+                          ? "2px solid var(--btn)"
+                          : "1.5px solid var(--border)",
+                        background: thinkDuration === sec
+                          ? "var(--btn)"
+                          : "transparent",
+                        color: thinkDuration === sec ? "#fff" : "var(--muted)",
+                        fontFamily: "Lato, sans-serif",
+                        fontSize: "0.9rem",
+                        fontWeight: "700",
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                      }}
+                    >
+                      {sec}s
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Choix duree parole */}
+              <div style={{ margin: "1.25rem 0" }}>
+                <p style={{
+                  fontSize: "0.75rem",
+                  fontWeight: "700",
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  color: "var(--muted)",
+                  marginBottom: "0.75rem",
+                }}>
+                  ⏱️ Temps de parole
+                </p>
+                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                  {TIMER_OPTIONS.map((sec) => (
+                    <button
+                      key={sec}
+                      onClick={() => setSpeakDuration(sec)}
+                      style={{
+                        padding: "0.5rem 1rem",
+                        borderRadius: "100px",
+                        border: speakDuration === sec
+                          ? "2px solid var(--btn)"
+                          : "1.5px solid var(--border)",
+                        background: speakDuration === sec
+                          ? "var(--btn)"
+                          : "transparent",
+                        color: speakDuration === sec ? "#fff" : "var(--muted)",
+                        fontFamily: "Lato, sans-serif",
+                        fontSize: "0.9rem",
+                        fontWeight: "700",
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                      }}
+                    >
+                      {sec}s
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <button className="btn" onClick={() => setStep("think")}>
                 Demarrer
               </button>
@@ -188,6 +318,7 @@ export default function SessionPage() {
         </div>
       )}
 
+      {/* ---- STEP : think ---- */}
       {step === "think" && (
         <div className="card" style={{ textAlign: "center" }}>
           <div className="chip">Reflexion</div>
@@ -196,14 +327,15 @@ export default function SessionPage() {
             <div className="text">{topic}</div>
           </div>
           <Timer
-            total={60}
+            total={thinkDuration}
             onComplete={startSpeaking}
             label="Temps de reflexion"
-            sublabel="Organise tes idees"
+            sublabel={`${thinkDuration} secondes`}
           />
         </div>
       )}
 
+      {/* ---- STEP : speak ---- */}
       {step === "speak" && (
         <div className="card" style={{ textAlign: "center" }}>
           <div className="chip">Parole</div>
@@ -215,14 +347,15 @@ export default function SessionPage() {
             <div className="rec-dot" /> Enregistrement en cours
           </div>
           <Timer
-            total={60}
+            total={speakDuration}
             onComplete={handleTimerComplete}
             label="Temps de parole"
-            sublabel="Exprime-toi librement"
+            sublabel={`${speakDuration} secondes`}
           />
         </div>
       )}
 
+      {/* ---- STEP : review ---- */}
       {step === "review" && (
         <div className="card">
           <div className="chip">Bilan</div>
@@ -254,6 +387,7 @@ export default function SessionPage() {
         </div>
       )}
 
+      {/* ---- STEP : saving ---- */}
       {step === "saving" && (
         <div className="card" style={{ textAlign: "center" }}>
           <div className="chip">Sauvegarde</div>
@@ -262,14 +396,120 @@ export default function SessionPage() {
         </div>
       )}
 
+      {/* ---- STEP : result ---- */}
       {step === "result" && (
-        <div className="card" style={{ textAlign: "center" }}>
-          <div className="chip">Termine</div>
+        <div className="card">
+          <div className="chip" style={{ display: "block", textAlign: "center" }}>
+            Termine
+          </div>
+
+          {/* Message note */}
           <div className="message-box">
             <div className="emoji">{emoji}</div>
             <div className="msg">{msg}</div>
           </div>
-          <p>Seance enregistree !</p>
+
+          {/* Ce que tu as dit */}
+          {transcription && (
+            <div style={{
+              background: "var(--bg)",
+              borderRadius: "14px",
+              padding: "1.25rem",
+              margin: "1rem 0",
+              borderLeft: "4px solid #9A9A9A",
+            }}>
+              <p style={{
+                fontSize: "0.75rem",
+                fontWeight: "700",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "var(--muted)",
+                marginBottom: "0.75rem",
+              }}>
+                📝 Ce que tu as dit
+              </p>
+              <p style={{
+                fontSize: "0.9rem",
+                color: "var(--text)",
+                lineHeight: "1.7",
+                fontStyle: "italic",
+              }}>
+                {transcription}
+              </p>
+
+              {/* Bouton voir correction */}
+              {!showCorrection && (
+                <button
+                  onClick={() => setShowCorrection(true)}
+                  style={{
+                    marginTop: "1rem",
+                    width: "100%",
+                    padding: "0.75rem",
+                    borderRadius: "10px",
+                    border: "2px solid var(--btn)",
+                    background: "transparent",
+                    color: "var(--btn)",
+                    fontFamily: "Lato, sans-serif",
+                    fontSize: "0.9rem",
+                    fontWeight: "700",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  ✏️ Voir la correction
+                </button>
+              )}
+
+              {/* Correction */}
+              {showCorrection && (
+                <div style={{ marginTop: "1rem" }}>
+                  <div style={{
+                    height: "1px",
+                    background: "var(--border)",
+                    margin: "0.75rem 0",
+                  }} />
+                  <p style={{
+                    fontSize: "0.75rem",
+                    fontWeight: "700",
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    color: "var(--btn)",
+                    marginBottom: "0.75rem",
+                  }}>
+                    ✅ Texte corrige
+                  </p>
+                  {loadingFeedback ? (
+                    <p style={{
+                      fontSize: "0.85rem",
+                      color: "var(--muted)",
+                      textAlign: "center",
+                    }}>
+                      ⏳ Correction en cours...
+                    </p>
+                  ) : feedback ? (
+                    <p style={{
+                      fontSize: "0.9rem",
+                      color: "var(--text)",
+                      lineHeight: "1.7",
+                    }}>
+                      {feedback}
+                    </p>
+                  ) : (
+                    <p style={{
+                      fontSize: "0.85rem",
+                      color: "var(--muted)",
+                    }}>
+                      Correction non disponible.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          <p style={{ textAlign: "center", marginTop: "0.5rem" }}>
+            Seance enregistree !
+          </p>
           <button className="btn" onClick={() => router.push("/dashboard")}>
             Voir mes seances
           </button>

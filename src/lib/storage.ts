@@ -124,7 +124,9 @@ export function canStartSession(): boolean {
 
 // ---- Streak ----
 export function calculateStreak(sessions: Session[]): number {
-  if (sessions.length === 0) return 0;
+  // Meme sans sessions on commence a 3
+  if (sessions.length === 0) return 3;
+
   const sorted = [...sessions].sort((a, b) => b.timestamp - a.timestamp);
   let streak = 1;
   let prevDate = new Date(sorted[0].timestamp);
@@ -141,5 +143,6 @@ export function calculateStreak(sessions: Session[]): number {
       break;
     }
   }
-  return streak;
+
+  return Math.max(streak, 3);
 }

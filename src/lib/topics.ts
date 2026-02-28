@@ -17,7 +17,7 @@ export const TOPICS: string[] = [
   "awel haja tebghi t3elemha l weldek fl future ?",
   "Chkoun la personne qui t inspire le plus ?",
   "aktar haja jer7atek chi hed galha wla darha ?",
-  "aktar haja zwina chi hed galha wla darha lik ?",
+  "aktar haja zwina chi hed galha lik ?",
   "3lach tat bghi real madrid ?",
   "3lach messi hsen mn ronaldo ?",
   "lhaja li tat khelik ferhan ?",

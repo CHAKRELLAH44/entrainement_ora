@@ -110,31 +110,7 @@ export default function DashboardPage() {
           <div style={{ width: 24 }} />
         </div>
 
-        {/* Streak */}
-        {streak > 0 && (
-          <div style={{
-            background: "linear-gradient(135deg, #FF6B0022, #F98F0B22)",
-            border: "1.5px solid #F98F0B",
-            borderRadius: "16px",
-            padding: "0.85rem 1rem",
-            marginBottom: "1rem",
-            display: "flex",
-            alignItems: "center",
-            gap: "0.75rem",
-          }}>
-            <div style={{ fontSize: "2rem", lineHeight: 1 }}>
-              🔥
-            </div>
-            <div>
-              <p style={{ fontSize: "0.75rem", fontWeight: "700", letterSpacing: "0.08em", textTransform: "uppercase", color: "#F98F0B", margin: 0, marginBottom: "0.1rem" }}>
-                Streak
-              </p>
-              <p style={{ fontSize: "1rem", fontWeight: "700", color: "var(--text)", margin: 0 }}>
-                {streak} jour{streak > 1 ? "s" : ""} consecutif{streak > 1 ? "s" : ""} 💪
-              </p>
-            </div>
-          </div>
-        )}
+        
 
         <div className="stat-row">
           <div className="stat-card">

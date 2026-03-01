@@ -77,28 +77,47 @@ export default function ReadingPage() {
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "fr-FR";
-    utterance.rate = slow ? 0.6 : 0.85;
-    utterance.pitch = 1;
+    utterance.rate = slow ? 0.65 : 0.9;
+    utterance.pitch = 1.1;
+    utterance.volume = 1;
 
-    // Chercher voix française
     const trySpeak = () => {
       const voices = window.speechSynthesis.getVoices();
+      
+      console.log("Voix disponibles:", voices.map(v => `${v.name} (${v.lang})`));
+
+      // Priorité : chercher la meilleure voix française féminine
       const frVoice =
+        // 1. Voix Google française feminine (Android Chrome)
+        voices.find((v) => v.lang === "fr-FR" && v.name.includes("Google") && v.name.toLowerCase().includes("female")) ||
+        // 2. Voix Apple Amelie (iPhone)
+        voices.find((v) => v.name.includes("Amelie")) ||
+        // 3. Voix Apple Thomas feminine
+        voices.find((v) => v.name.includes("Marie")) ||
+        // 4. N importe quelle voix fr-FR locale
         voices.find((v) => v.lang === "fr-FR" && v.localService) ||
+        // 5. Google French (Android)
+        voices.find((v) => v.lang === "fr-FR" && v.name.includes("Google")) ||
+        // 6. N importe quelle voix fr
         voices.find((v) => v.lang.startsWith("fr"));
-      if (frVoice) utterance.voice = frVoice;
+
+      if (frVoice) {
+        console.log("Voix choisie:", frVoice.name, frVoice.lang);
+        utterance.voice = frVoice;
+      }
+
       utterance.onend = () => setSpeaking(false);
       utterance.onerror = () => setSpeaking(false);
       window.speechSynthesis.speak(utterance);
     };
 
-    // Les voix peuvent ne pas etre chargees immediatement
     if (window.speechSynthesis.getVoices().length === 0) {
       window.speechSynthesis.onvoiceschanged = trySpeak;
     } else {
       trySpeak();
     }
   }
+
 
   function speakWord(word: string) {
     speak(word, true);

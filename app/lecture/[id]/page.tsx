@@ -5,6 +5,8 @@ import { useRouter, useParams } from "next/navigation";
 import { getCurrentUser } from "@/lib/storage";
 import { getBookById } from "@/data/books";
 import { getReadingProgress, saveReadingProgress } from "@/lib/reading-storage";
+import { getUserLang, getLangTTSCode } from "@/lib/i18n";
+
 
 export default function ReadingPage() {
   const router = useRouter();
@@ -76,7 +78,7 @@ export default function ReadingPage() {
     setSpeaking(true);
 
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "fr-FR";
+    utterance.lang = getLangTTSCode(getUserLang());
     utterance.rate = slow ? 0.65 : 0.9;
     utterance.pitch = 1.1;
     utterance.volume = 1;

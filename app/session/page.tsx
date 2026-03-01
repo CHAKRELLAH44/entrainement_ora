@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { getUserLang, getLangTTSCode } from "@/lib/i18n";
 import { useRouter } from "next/navigation";
 import Timer from "@/components/Timer";
 import RatingSlider from "@/components/RatingSlider";
@@ -69,7 +70,7 @@ export default function SessionPage() {
   async function rollTopic() {
     setLoading(true);
     try {
-      const res = await fetch("/api/random-topic");
+      const res = await fetch(`/api/random-topic?lang=${getUserLang()}`);
       const data = await res.json();
       setTopic(data.topic);
     } catch {

@@ -15,8 +15,8 @@ import { Session } from "@/types/session";
 
 type Step = "topic" | "think" | "speak" | "review" | "saving" | "result";
 
-const TIMER_OPTIONS = [5, 60];
-const THINK_OPTIONS = [10, 60];
+const TIMER_OPTIONS = [5, 30];
+const THINK_OPTIONS = [10, 120];
 
 function getMessage(note: number): { emoji: string; msg: string } {
   if (note >= 8) return { emoji: "👏", msg: "Excellent travail ! Continue ainsi." };

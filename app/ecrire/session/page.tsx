@@ -68,7 +68,7 @@ export default function EcrireSessionPage() {
       topic,
       note: 0, // Pas de note pour l'écriture
       audioUrl: null,
-      text,
+      text : null,
       timestamp: Date.now(),
       userNickname: user,
       correction,

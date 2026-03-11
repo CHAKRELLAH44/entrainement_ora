@@ -4,7 +4,7 @@ export interface Session {
   topic: string;
   note: number;
   audioUrl: string | null;
-  text: string | null;
+  text?: string | null;
   timestamp: number;
   userNickname: string;
   correction: string | null;

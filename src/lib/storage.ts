@@ -1,6 +1,22 @@
 import { supabase } from "./supabase";
 import { Session } from "@/types/session";
 
+// Test de connexion Supabase
+export async function testSupabaseConnection(): Promise<boolean> {
+  try {
+    const { data, error } = await supabase.from("sessions").select("count").limit(1);
+    if (error) {
+      console.error("Test de connexion Supabase échoué:", error);
+      return false;
+    }
+    console.log("Connexion Supabase OK");
+    return true;
+  } catch (err) {
+    console.error("Erreur de connexion Supabase:", err);
+    return false;
+  }
+}
+
 const LAST_SESSION_KEY = "lastSession";
 const USER_KEY = "currentUser";
 
@@ -69,6 +85,7 @@ export async function getSessions(userNickname: string): Promise<Session[]> {
     topic: row.topic,
     note: row.note,
     audioUrl: row.audio_url,
+    text: row.text || null,
     timestamp: row.timestamp,
     userNickname: row.user_nickname,
     correction: row.correction || null,
@@ -76,18 +93,52 @@ export async function getSessions(userNickname: string): Promise<Session[]> {
 }
 
 export async function saveSession(session: Session): Promise<void> {
-  const { error } = await supabase.from("sessions").insert({
+  console.log("Tentative de sauvegarde de session:", session);
+  console.log("URL Supabase:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+  console.log("Clé Supabase:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? "Définie" : "Non définie");
+
+  // Test rapide de connexion Supabase
+  try {
+    const testConnection = await supabase.auth.getSession();
+    console.log("État de connexion Supabase:", testConnection.data);
+  } catch (e) {
+    console.warn("⚠️ Impossible de vérifier la connexion Supabase:", e);
+  }
+
+  const { data, error } = await supabase.from("sessions").insert({
     id: session.id,
     date: session.date,
     topic: session.topic,
     note: session.note,
     audio_url: session.audioUrl,
+    text: session.text,
     timestamp: session.timestamp,
     user_nickname: session.userNickname,
     correction: session.correction,
   });
+
+  console.log("Résultat Supabase - data:", data);
+  console.log("Résultat Supabase - error:", error);
+
   if (error) {
-    console.error("Erreur saveSession:", error);
+    console.error("❌ Erreur saveSession:", error);
+    console.error("Erreur complète (JSON):", JSON.stringify(error, null, 2));
+    console.error("Détails de l'erreur:", {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code,
+      status: error.status
+    });
+    
+    // Suggerer les causes possibles
+    console.error("📋 Causes possibles:");
+    console.error("1. La table 'sessions' n'existe pas dans Supabase");
+    console.error("2. Les variables d'environnement NEXT_PUBLIC_SUPABASE_URL/KEY ne sont pas définies");
+    console.error("3. L'utilisateur n'a pas les permissions pour insérer dans 'sessions'");
+    console.error("4. Un conflit avec un ID de session en doublon");
+  } else {
+    console.log("✅ Session sauvegardée avec succès");
   }
 }
 

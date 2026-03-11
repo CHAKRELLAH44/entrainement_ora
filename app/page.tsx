@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getCurrentUser, getHoursUntilNextSession, logoutUser, getSessions, calculateStreak } from "@/lib/storage";
+import { getCurrentUser, getHoursUntilNextSession, logoutUser, getSessions, calculateStreak, testSupabaseConnection } from "@/lib/storage";
 import { useLang, setUserLang, getLangFlag, getLangLabel, Lang } from "@/lib/i18n";
 
 const LANGS: Lang[] = ["fr", "en", "es"];
@@ -17,17 +17,34 @@ export default function AccueilPage() {
   const [expandedFeature, setExpandedFeature] = useState<string | null>(null);
   const [streak, setStreak] = useState(0);
   const [showLangPicker, setShowLangPicker] = useState(false);
+  const [showHistoryMenu, setShowHistoryMenu] = useState(false);
 
   useEffect(() => {
     const currentUser = getCurrentUser();
     if (!currentUser) { router.push("/login"); return; }
     setUser(currentUser);
     setHoursLeft(getHoursUntilNextSession());
+
+    // Test de connexion Supabase
+    testSupabaseConnection();
+
     getSessions(currentUser).then((data) => {
       setStreak(calculateStreak(data));
       setReady(true);
     });
   }, []);
+
+  // Fermer le menu historique quand on clique ailleurs
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showHistoryMenu && !(event.target as Element).closest('.history-menu-container')) {
+        setShowHistoryMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showHistoryMenu]);
 
   function handleLogout() {
     logoutUser();
@@ -89,8 +106,8 @@ export default function AccueilPage() {
 
         <p style={{ color: "var(--muted)", marginBottom: "1rem" }}>{t("whatToDo")}</p>
 
-        {/* Parler / Lire */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", margin: "0.5rem 0 1rem" }}>
+        {/* Parler / Lire / Écrire */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.75rem", margin: "0.5rem 0 1rem" }}>
           <div
             onClick={() => hoursLeft === 0 && router.push("/intro")}
             style={{ background: hoursLeft > 0 ? "var(--bg)" : "linear-gradient(135deg, #F98F0B22, #F98F0B11)", border: hoursLeft > 0 ? "1.5px solid var(--border)" : "1.5px solid var(--btn)", borderRadius: "16px", padding: "1.25rem 1rem", textAlign: "center", cursor: hoursLeft > 0 ? "not-allowed" : "pointer", opacity: hoursLeft > 0 ? 0.5 : 1, transition: "all 0.2s", position: "relative" }}
@@ -115,6 +132,53 @@ export default function AccueilPage() {
             <p style={{ fontWeight: "700", color: "var(--text)", margin: 0, fontSize: "0.95rem" }}>{t("read")}</p>
             <p style={{ fontSize: "0.7rem", color: "#27AE60", margin: "0.4rem 0 0" }}>{t("alwaysAvailable")} ✓</p>
           </div>
+
+          <div
+            onClick={() => router.push("/ecrire")}
+            style={{ background: "linear-gradient(135deg, #9B59B622, #9B59B611)", border: "1.5px solid #9B59B6", borderRadius: "16px", padding: "1.25rem 1rem", textAlign: "center", cursor: "pointer", transition: "all 0.2s" }}
+          >
+            <div style={{ fontSize: "2rem", marginBottom: "0.4rem" }}>✍️</div>
+            <p style={{ fontWeight: "700", color: "var(--text)", margin: 0, fontSize: "0.95rem" }}>{t("write")}</p>
+            <p style={{ fontSize: "0.7rem", color: "#9B59B6", margin: "0.4rem 0 0" }}>{t("alwaysAvailable")} ✓</p>
+          </div>
+        </div>
+
+        {/* Bouton Historique unique */}
+        <div className="history-menu-container" style={{ position: "relative", marginBottom: "1rem" }}>
+          <button
+            onClick={() => setShowHistoryMenu(!showHistoryMenu)}
+            className="btn"
+            style={{ width: "100%", position: "relative" }}
+          >
+            📚 {t("myActivities")}
+            <span style={{ marginLeft: "0.5rem", transform: showHistoryMenu ? "rotate(180deg)" : "rotate(0deg)", display: "inline-block", transition: "transform 0.2s" }}>▼</span>
+          </button>
+
+          {showHistoryMenu && (
+            <div style={{ position: "absolute", top: "110%", left: 0, right: 0, background: "var(--card)", border: "1.5px solid var(--border)", borderRadius: "12px", padding: "0.5rem", zIndex: 100, boxShadow: "0 8px 24px #00000055" }}>
+              <button
+                onClick={() => { router.push("/dashboard"); setShowHistoryMenu(false); }}
+                className="btn btn-ghost"
+                style={{ width: "100%", marginBottom: "0.25rem", justifyContent: "flex-start", padding: "0.75rem 1rem" }}
+              >
+                🎙️ {t("mySpeakingSessions")}
+              </button>
+              <button
+                onClick={() => { router.push("/lecture/historique"); setShowHistoryMenu(false); }}
+                className="btn btn-ghost"
+                style={{ width: "100%", marginBottom: "0.25rem", justifyContent: "flex-start", padding: "0.75rem 1rem" }}
+              >
+                📖 {t("myReadings")}
+              </button>
+              <button
+                onClick={() => { router.push("/ecrire/historique"); setShowHistoryMenu(false); }}
+                className="btn btn-ghost"
+                style={{ width: "100%", justifyContent: "flex-start", padding: "0.75rem 1rem" }}
+              >
+                ✍️ {t("myWritings")}
+              </button>
+            </div>
+          )}
         </div>
 
         {hoursLeft > 0 && (
@@ -129,10 +193,6 @@ export default function AccueilPage() {
           </div>
         )}
 
-        <Link href="/dashboard" className="btn btn-ghost" style={{ textDecoration: "none" }}>
-          📊 {t("mySessions")}
-        </Link>
-
         <div style={{ height: "1px", background: "var(--border)", margin: "1.5rem 0" }} />
 
         {/* Feature */}
@@ -142,10 +202,10 @@ export default function AccueilPage() {
         >
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <span>📚</span>
+              <span>✍️</span>
               <div>
                 <p style={{ fontSize: "0.7rem", fontWeight: "700", letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--btn)", margin: 0 }}>{t("newFeature")}</p>
-                <p style={{ fontSize: "0.9rem", fontWeight: "700", color: "var(--text)", margin: 0 }}>{t("readingModule")}</p>
+                <p style={{ fontSize: "0.9rem", fontWeight: "700", color: "var(--text)", margin: 0 }}>{t("writingModule")}</p>
               </div>
             </div>
             <span style={{ color: "var(--btn)", fontSize: "1.2rem", fontWeight: "700", transform: expandedFeature === "update" ? "rotate(180deg)" : "rotate(0deg)", display: "inline-block", transition: "transform 0.2s" }}>▼</span>
@@ -154,12 +214,12 @@ export default function AccueilPage() {
             <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid #F98F0B33" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                 {[
-                  { icon: "📖", text: t("chooseBook") },
-                  { icon: "🔖", text: t("progressSaved") },
-                  { icon: "✍️", text: t("yourSummary") },
-                  { icon: "📚", text: t("twoWords") },
-                  { icon: "🤖", text: t("correctWithAI") },
-                  { icon: "🔒", text: t("finishToUnlock") },
+                  { icon: "🎲", text: t("randomTopic") },
+                  { icon: "⏰", text: t("noTimer") },
+                  { icon: "✍️", text: t("writeMinimum") },
+                  { icon: "🤖", text: t("aiCorrection") },
+                  { icon: "📚", text: t("writingHistory") },
+                  { icon: "🔄", text: t("practiceWriting") },
                 ].map((item, i) => (
                   <div key={i} style={{ display: "flex", gap: "0.5rem", background: "var(--bg)", borderRadius: "10px", padding: "0.5rem 0.75rem" }}>
                     <span>{item.icon}</span>

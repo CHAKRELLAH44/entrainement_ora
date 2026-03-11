@@ -12,28 +12,36 @@ export async function POST(request: Request) {
     return NextResponse.json({ feedback: null });
   }
 
-  const prompt = `Voici un texte oral transcrit automatiquement :
+  const prompt = `Tu es un correcteur professionnel de français. Voici une transcription d'une conversation orale :
 
-"${transcription}"
+---TRANSCRIPTION ORIGINALE---
+${transcription}
+---FIN TRANSCRIPTION---
 
+CORRECTION :
 Recris EXACTEMENT ce texte en corrigeant UNIQUEMENT :
-- Les fautes d orthographe
-- Les fautes de grammaire  
-- La conjugaison
-- La ponctuation
+1. Les fautes d'orthographe
+2. Les fautes de grammaire
+3. La conjugaison
+4. La ponctuation
 
-REGLES STRICTES :
-- Ne change pas le sens
-- Ne rajoute aucun mot
-- Ne supprime aucun mot
-- Ne fais aucun commentaire
-- Ne rajoute aucune explication
-- Retourne UNIQUEMENT le texte corrige, rien d autre`;
+IMPORTANT :
+✓ Ne rajoute AUCUN mot
+✓ Ne supprime AUCUN mot
+✓ Ne change PAS le sens
+✓ Préserve le ton naturel
+✓ Retourne UNIQUEMENT le texte corrigé
+
+TEXTE CORRIGE :`;
 
   try {
+    console.log("\n🎙️ CORRECTION DE TRANSCRIPTION ORALE");
+    console.log("Transcription originale (", transcription.length, "caractères)");
+    
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
-      max_tokens: 1000,
+      max_tokens: 2000,
+      temperature: 0.1,
       messages: [
         {
           role: "user",
@@ -42,11 +50,17 @@ REGLES STRICTES :
       ],
     });
 
-    const feedback = completion.choices[0]?.message?.content || null;
-    console.log("Feedback generated:", feedback);
+    const feedback = completion.choices[0]?.message?.content?.trim() || null;
+    console.log("✅ Texte corrigé (", feedback?.length || 0, "caractères)");
+    
+    if (!feedback || feedback.length === 0) {
+      console.error("⚠️ La correction a retourné un texte vide!");
+      return NextResponse.json({ feedback: transcription });
+    }
+    
     return NextResponse.json({ feedback });
   } catch (error) {
-    console.error("Erreur Groq feedback:", error);
-    return NextResponse.json({ feedback: null });
+    console.error("❌ Erreur Groq feedback:", error);
+    return NextResponse.json({ feedback: transcription });
   }
 }

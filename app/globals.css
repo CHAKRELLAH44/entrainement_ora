@@ -421,6 +421,10 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
 }
 
 /* ---- Session items ---- */
+.sessions-list {
+  margin-top: 1.5rem;
+}
+
 .session-item {
   border-bottom: 1px solid var(--border);
   padding: 1rem 0;
@@ -449,6 +453,18 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
   padding: 0.15rem 0.6rem;
   font-size: 0.8rem;
   font-weight: 700;
+}
+
+.session-type {
+  background: var(--bg);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .session-topic {

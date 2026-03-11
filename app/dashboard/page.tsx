@@ -25,11 +25,29 @@ function SessionCard({ session }: { session: Session }) {
       <div className="session-topic">{session.topic}</div>
       {session.audioUrl && (
         <>
-          <p className="audio-label">🎧 Reecouter</p>
+          <p className="audio-label">🎧 Reécouter</p>
           <audio className="audio-player" controls preload="metadata" src={session.audioUrl}>
             <source src={session.audioUrl} type="audio/webm" />
             <source src={session.audioUrl} type="audio/mp4" />
           </audio>
+        </>
+      )}
+      {session.text && (
+        <>
+          <p className="audio-label">✍️ Revoir le texte</p>
+          <div style={{
+            background: "var(--bg)",
+            border: "1.5px solid var(--border)",
+            borderRadius: "12px",
+            padding: "1rem",
+            marginTop: "0.5rem",
+            whiteSpace: "pre-wrap",
+            fontSize: "0.9rem",
+            maxHeight: "200px",
+            overflowY: "auto"
+          }}>
+            {session.text}
+          </div>
         </>
       )}
       {session.correction && (

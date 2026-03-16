@@ -60,7 +60,7 @@ export function useLang() {
 // Traductions
 export const TRANSLATIONS = {
   fr: {
-    appName: "Parole Libre",
+    appName: "Bla Bla GYM",
     hello: "Bonjour",
     whatToDo: "Que veux-tu faire aujourd hui ?",
     speak: "Parler",

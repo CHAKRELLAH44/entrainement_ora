@@ -2,8 +2,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Parole Libre",
+  title: "Bla Bla GYM",
   description: "Ameliore ton expression orale en francais",
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export const viewport = {

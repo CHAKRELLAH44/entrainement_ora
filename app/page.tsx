@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { getCurrentUser, getHoursUntilNextSession, logoutUser, getSessions, calculateStreak, testSupabaseConnection } from "@/lib/storage";
 import { useLang, setUserLang, getLangFlag, getLangLabel, Lang } from "@/lib/i18n";
 
@@ -59,7 +60,7 @@ export default function AccueilPage() {
 
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-          <div className="logo" style={{ margin: 0 }}>{t("appName")}</div>
+          <Image src="/logo.png" alt="Logo" width={40} height={40} style={{ margin: 0 }} />
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
 
             {/* Lang switcher */}

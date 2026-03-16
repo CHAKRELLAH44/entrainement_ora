@@ -6,13 +6,13 @@ export const metadata: Metadata = {
   title: "Bla Bla GYM",
   description: "Ameliore ton expression orale en francais",
   icons: {
-    icon: "/logo.png",
+    icon: "/favicon.svg",
   },
   openGraph: {
-    images: ["/logo.png"],
+    images: ["/favicon.svg"],
   },
   twitter: {
-    images: ["/logo.png"],
+    images: ["/favicon.svg"],
   },
 };
 

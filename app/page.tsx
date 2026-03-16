@@ -60,7 +60,7 @@ export default function AccueilPage() {
 
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-          <Image src="/logo.png" alt="Logo" width={40} height={40} style={{ margin: 0 }} />
+          <Image src="/favo.svg" alt="Logo" width={40} height={40} style={{ margin: 0 }} />
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
 
             {/* Lang switcher */}

@@ -2,10 +2,17 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://blablagym.netlify.app"),
   title: "Bla Bla GYM",
   description: "Ameliore ton expression orale en francais",
   icons: {
-    icon: '/favicon.svg',
+    icon: "/logo.png",
+  },
+  openGraph: {
+    images: ["/logo.png"],
+  },
+  twitter: {
+    images: ["/logo.png"],
   },
 };
 

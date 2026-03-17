@@ -196,3 +196,51 @@ export function calculateStreak(sessions: Session[]): number {
 
   return streak;
 }
+
+// ---- Expression Sessions ----
+export async function saveExpressionSession(
+  mediaId: string,
+  mediaType: "video" | "image",
+  mediaUrl: string,
+  audioUrl: string | null,
+  text: string | null,
+  userNickname: string
+): Promise<string | null> {
+  const id = `expr-${Date.now()}`;
+  const now = new Date();
+  const date = now.toLocaleDateString("fr-FR");
+
+  const { error } = await supabase.from("expression_sessions").insert({
+    id,
+    date,
+    media_id: mediaId,
+    media_type: mediaType,
+    media_url: mediaUrl,
+    audio_url: audioUrl,
+    text: text,
+    timestamp: Date.now(),
+    user_nickname: userNickname,
+    correction: null, // Sera mis à jour après correction IA
+  });
+
+  if (error) {
+    console.error("Erreur saveExpressionSession:", error);
+    return null;
+  }
+  setLastSessionTimestamp();
+  return id;
+}
+
+export async function getExpressionSessions(userNickname: string): Promise<any[]> {
+  const { data, error } = await supabase
+    .from("expression_sessions")
+    .select("*")
+    .eq("user_nickname", userNickname)
+    .order("timestamp", { ascending: false });
+
+  if (error) {
+    console.error("Erreur getExpressionSessions:", error);
+    return [];
+  }
+  return data || [];
+}

@@ -107,8 +107,8 @@ export default function AccueilPage() {
 
         <p style={{ color: "var(--muted)", marginBottom: "1rem" }}>{t("whatToDo")}</p>
 
-        {/* Parler / Lire / Écrire */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.75rem", margin: "0.5rem 0 1rem" }}>
+        {/* Parler / Lire / Écrire / Exprimer */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", margin: "0.5rem 0 1rem" }}>
           <div
             onClick={() => hoursLeft === 0 && router.push("/intro")}
             style={{ background: hoursLeft > 0 ? "var(--bg)" : "linear-gradient(135deg, #F98F0B22, #F98F0B11)", border: hoursLeft > 0 ? "1.5px solid var(--border)" : "1.5px solid var(--btn)", borderRadius: "16px", padding: "1.25rem 1rem", textAlign: "center", cursor: hoursLeft > 0 ? "not-allowed" : "pointer", opacity: hoursLeft > 0 ? 0.5 : 1, transition: "all 0.2s", position: "relative" }}
@@ -142,6 +142,19 @@ export default function AccueilPage() {
             <p style={{ fontWeight: "700", color: "var(--text)", margin: 0, fontSize: "0.95rem" }}>{t("write")}</p>
             <p style={{ fontSize: "0.7rem", color: "#9B59B6", margin: "0.4rem 0 0" }}>{t("alwaysAvailable")} ✓</p>
           </div>
+
+          <div
+            onClick={() => hoursLeft === 0 && router.push("/exprimer")}
+            style={{ background: hoursLeft > 0 ? "var(--bg)" : "linear-gradient(135deg, #E67E2222, #E67E2211)", border: hoursLeft > 0 ? "1.5px solid var(--border)" : "1.5px solid #E67E22", borderRadius: "16px", padding: "1.25rem 1rem", textAlign: "center", cursor: hoursLeft > 0 ? "not-allowed" : "pointer", opacity: hoursLeft > 0 ? 0.5 : 1, transition: "all 0.2s" }}
+          >
+            <div style={{ fontSize: "2rem", marginBottom: "0.4rem" }}>🎬</div>
+            <p style={{ fontWeight: "700", color: "var(--text)", margin: 0, fontSize: "0.95rem" }}>{t("express")}</p>
+            {hoursLeft > 0 ? (
+              <p style={{ fontSize: "0.7rem", color: "#E74C3C", margin: "0.4rem 0 0", fontWeight: "700" }}>🔒 {hoursLeft}{t("lockedHours")}</p>
+            ) : (
+              <p style={{ fontSize: "0.7rem", color: "#E67E22", margin: "0.4rem 0 0" }}>{t("available")} ✓</p>
+            )}
+          </div>
         </div>
 
         {/* Bouton Historique unique */}
@@ -174,9 +187,16 @@ export default function AccueilPage() {
               <button
                 onClick={() => { router.push("/ecrire/historique"); setShowHistoryMenu(false); }}
                 className="btn btn-ghost"
-                style={{ width: "100%", justifyContent: "flex-start", padding: "0.75rem 1rem" }}
+                style={{ width: "100%", marginBottom: "0.25rem", justifyContent: "flex-start", padding: "0.75rem 1rem" }}
               >
                 ✍️ {t("myWritings")}
+              </button>
+              <button
+                onClick={() => { router.push("/exprimer/historique"); setShowHistoryMenu(false); }}
+                className="btn btn-ghost"
+                style={{ width: "100%", justifyContent: "flex-start", padding: "0.75rem 1rem" }}
+              >
+                🎬 {t("expressionSessions")}
               </button>
             </div>
           )}
@@ -196,31 +216,31 @@ export default function AccueilPage() {
 
         <div style={{ height: "1px", background: "var(--border)", margin: "1.5rem 0" }} />
 
-        {/* Feature */}
+        {/* Feature - Expression */}
         <div
-          style={{ background: "linear-gradient(135deg, #F98F0B22, #F98F0B11)", border: "1.5px solid var(--btn)", borderRadius: "16px", padding: "1rem", marginBottom: "0.75rem", cursor: "pointer" }}
+          style={{ background: "linear-gradient(135deg, #E67E2222, #E67E2211)", border: "1.5px solid #E67E22", borderRadius: "16px", padding: "1rem", marginBottom: "0.75rem", cursor: "pointer" }}
           onClick={() => setExpandedFeature(expandedFeature === "update" ? null : "update")}
         >
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <span>✍️</span>
+              <span>🎬</span>
               <div>
-                <p style={{ fontSize: "0.7rem", fontWeight: "700", letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--btn)", margin: 0 }}>{t("newFeature")}</p>
-                <p style={{ fontSize: "0.9rem", fontWeight: "700", color: "var(--text)", margin: 0 }}>{t("writingModule")}</p>
+                <p style={{ fontSize: "0.7rem", fontWeight: "700", letterSpacing: "0.08em", textTransform: "uppercase", color: "#E67E22", margin: 0 }}>{t("newFeature")}</p>
+                <p style={{ fontSize: "0.9rem", fontWeight: "700", color: "var(--text)", margin: 0 }}>{t("expressionModule")}</p>
               </div>
             </div>
-            <span style={{ color: "var(--btn)", fontSize: "1.2rem", fontWeight: "700", transform: expandedFeature === "update" ? "rotate(180deg)" : "rotate(0deg)", display: "inline-block", transition: "transform 0.2s" }}>▼</span>
+            <span style={{ color: "#E67E22", fontSize: "1.2rem", fontWeight: "700", transform: expandedFeature === "update" ? "rotate(180deg)" : "rotate(0deg)", display: "inline-block", transition: "transform 0.2s" }}>▼</span>
           </div>
           {expandedFeature === "update" && (
-            <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid #F98F0B33" }}>
+            <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid #E67E2233" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                 {[
-                  { icon: "🎲", text: t("randomTopic") },
-                  { icon: "⏰", text: t("noTimer") },
-                  { icon: "✍️", text: t("writeMinimum") },
-                  { icon: "🤖", text: t("aiCorrection") },
-                  { icon: "📚", text: t("writingHistory") },
-                  { icon: "🔄", text: t("practiceWriting") },
+                  { icon: "🎥", text: "Vidéos et photos aléatoires" },
+                  { icon: "⏰", text: "Pas de limite de temps" },
+                  { icon: "🎙️", text: "Enregistre ton avis en parole" },
+                  { icon: "📚", text: "Historique de tes expressions" },
+                  { icon: "🔄", text: "Pratique l'expression spontanée" },
+                  { icon: "🚀", text: "Disponible après 24h comme Parler" },
                 ].map((item, i) => (
                   <div key={i} style={{ display: "flex", gap: "0.5rem", background: "var(--bg)", borderRadius: "10px", padding: "0.5rem 0.75rem" }}>
                     <span>{item.icon}</span>

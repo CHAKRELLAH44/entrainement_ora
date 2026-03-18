@@ -68,7 +68,13 @@ export default function LoginPage() {
             {error}
           </p>
         )}
-
+        <button
+  className="btn btn-ghost"
+  style={{ marginTop: "0.5rem", fontSize: "0.85rem" }}
+  onClick={() => router.push(`/register?code=${process.env.NEXT_PUBLIC_INVITE_CODE}`)}
+>
+  Pas encore de compte ? S inscrire
+</button>
         <button className="btn" onClick={handleLogin} disabled={loading}>
           {loading ? "Verification..." : "Se connecter"}
         </button>

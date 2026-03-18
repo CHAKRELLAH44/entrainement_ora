@@ -22,7 +22,7 @@ export default function IntroPage() {
               <div style={{ width: 24 }} />
             </div>
 
-            <h2>Rules diali bach tebda had session</h2>
+            <h2>Règles pour commencer cette session </h2>
 
             <ul className="tip-list">
               <li>
@@ -32,21 +32,19 @@ export default function IntroPage() {
               <li>
                 <div className="tip-icon">🎲</div>
                 <div>
-                  <strong>Sujet aleatoire</strong> li khtarit lik , nta o zehrek chno yetle3 .
+                  <strong>Sujet aleatoire</strong> qui te sera choisi  
                 </div>
               </li>
               <li>
                 <div className="tip-icon">🧠</div>
                 <div>
-                  <strong>60 secondes</strong> bach tfeker chno tgol — organise
-                  Afkarek.
+                  <strong>60 secondes</strong> pour penser et organiser les idees.
                 </div>
               </li>
               <li>
                 <div className="tip-icon">🎙️</div>
                 <div>
-                  <strong>60 secondes</strong> bach tehder + 3eber kif bghiit.
-                  Dakchi hay koun enregistre.
+                  <strong>60 secondes</strong> pour s'exprimer ,tous sera enregistrer.
                 </div>
               </li>
             </ul>
@@ -71,27 +69,25 @@ export default function IntroPage() {
               <div style={{ width: 24 }} />
             </div>
 
-            <h2>Message from Binomtek</h2>
+            <h2>Message from Me</h2>
 
             <ul className="tip-list">
               <li>
                 <div className="tip-icon">🗣️</div>
                 <div>
-                  Parle <strong>spontanement</strong>, Li jak f3e9lek golo.
+                  Parle <strong>spontanement</strong>.
                 </div>
               </li>
               <li>
                 <div className="tip-icon">🌱</div>
                 <div>
-                  Ne cherche pas la <strong>perfection</strong>. Lmhm houwa
-                  tehder hadchi hat chofo hir bohdek.
+                  Ne cherche pas la <strong>perfection</strong>, L'essentiel c'est desaille jour apres jour.
                 </div>
               </li>
               <li>
                 <div className="tip-icon">💪</div>
                 <div>
-                  Dert jehd bach sayebt hadchi —{" "}
-                  <strong>dir tanta chi haja</strong>.
+                  Il y a la  <strong>correction</strong> ,apres chaque session.
                 </div>
               </li>
             </ul>

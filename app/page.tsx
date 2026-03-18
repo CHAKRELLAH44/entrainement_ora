@@ -138,23 +138,29 @@ export default function AccueilPage() {
             onClick={() => router.push("/ecrire")}
             style={{ background: "linear-gradient(135deg, #9B59B622, #9B59B611)", border: "1.5px solid #9B59B6", borderRadius: "16px", padding: "1.25rem 1rem", textAlign: "center", cursor: "pointer", transition: "all 0.2s" }}
           >
+            
             <div style={{ fontSize: "2rem", marginBottom: "0.4rem" }}>✍️</div>
             <p style={{ fontWeight: "700", color: "var(--text)", margin: 0, fontSize: "0.95rem" }}>{t("write")}</p>
             <p style={{ fontSize: "0.7rem", color: "#9B59B6", margin: "0.4rem 0 0" }}>{t("alwaysAvailable")} ✓</p>
+            
           </div>
 
           <div
-            onClick={() => hoursLeft === 0 && router.push("/exprimer")}
-            style={{ background: hoursLeft > 0 ? "var(--bg)" : "linear-gradient(135deg, #E67E2222, #E67E2211)", border: hoursLeft > 0 ? "1.5px solid var(--border)" : "1.5px solid #E67E22", borderRadius: "16px", padding: "1.25rem 1rem", textAlign: "center", cursor: hoursLeft > 0 ? "not-allowed" : "pointer", opacity: hoursLeft > 0 ? 0.5 : 1, transition: "all 0.2s" }}
-          >
-            <div style={{ fontSize: "2rem", marginBottom: "0.4rem" }}>🎬</div>
-            <p style={{ fontWeight: "700", color: "var(--text)", margin: 0, fontSize: "0.95rem" }}>{t("express")}</p>
-            {hoursLeft > 0 ? (
-              <p style={{ fontSize: "0.7rem", color: "#E74C3C", margin: "0.4rem 0 0", fontWeight: "700" }}>🔒 {hoursLeft}{t("lockedHours")}</p>
-            ) : (
-              <p style={{ fontSize: "0.7rem", color: "#E67E22", margin: "0.4rem 0 0" }}>{t("available")} ✓</p>
-            )}
-          </div>
+  onClick={() => hoursLeft === 0 && router.push("/exprimer")}
+  style={{ background: hoursLeft > 0 ? "var(--bg)" : "linear-gradient(135deg, #E67E2222, #E67E2211)", border: hoursLeft > 0 ? "1.5px solid var(--border)" : "1.5px solid #E67E22", borderRadius: "16px", padding: "1.25rem 1rem", textAlign: "center", cursor: hoursLeft > 0 ? "not-allowed" : "pointer", opacity: hoursLeft > 0 ? 0.5 : 1, transition: "all 0.2s", position: "relative" }}
+>
+  {/* Badge NEW */}
+  <div style={{ position: "absolute", top: "-10px", left: "-10px", background: "linear-gradient(135deg, #2e2c9b, #00fff2)", borderRadius: "20px", padding: "0.2rem 0.55rem", fontSize: "0.65rem", fontWeight: "700", color: "#fff", boxShadow: "0 2px 8px #E67E2255", letterSpacing: "0.05em" }}>
+    ✨ NEW
+  </div>
+  <div style={{ fontSize: "2rem", marginBottom: "0.4rem" }}>🎬</div>
+  <p style={{ fontWeight: "700", color: "var(--text)", margin: 0, fontSize: "0.95rem" }}>{t("express")}</p>
+  {hoursLeft > 0 ? (
+    <p style={{ fontSize: "0.7rem", color: "#E74C3C", margin: "0.4rem 0 0", fontWeight: "700" }}>🔒 {hoursLeft}{t("lockedHours")}</p>
+  ) : (
+    <p style={{ fontSize: "0.7rem", color: "#E67E22", margin: "0.4rem 0 0" }}>{t("available")} ✓</p>
+  )}
+</div>
         </div>
 
         {/* Bouton Historique unique */}

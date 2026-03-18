@@ -51,7 +51,7 @@ export default function ExpressionPage() {
               <div style={{ width: 24 }} />
             </div>
 
-            <h2>Rules diali bach tebda had session</h2>
+            <h2>Règles pour commencer cette session</h2>
 
             {/* Main Rules */}
             <ul className="tip-list">
@@ -62,7 +62,7 @@ export default function ExpressionPage() {
               <li>
                 <div className="tip-icon">🎲</div>
                 <div>
-                  <strong>Sujet aléatoire</strong> — Image ou vidéo qui te parle
+                  <strong>Sujet aléatoire</strong> — Image ou vidéo 
                 </div>
               </li>
               <li>
@@ -80,7 +80,7 @@ export default function ExpressionPage() {
               <li>
                 <div className="tip-icon">🤖</div>
                 <div>
-                  <strong>Correction IA</strong> — Elle vas corriger quelque faute d expression c est tout 
+                  <strong>Correction IA</strong> — Elle vas corriger quelque faute d'expression c'est tout 
                 </div>
               </li>
             </ul>

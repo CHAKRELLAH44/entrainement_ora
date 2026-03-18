@@ -35,7 +35,7 @@ export default function LoginPage() {
   return (
     <div className="page-wrapper">
       <div className="card" style={{ textAlign: "center" }}>
-        <div className="logo">Parole Libre</div>
+        <div className="logo">🎙️ BlaBlа Gym</div>
         <h1>MAR7BAAA 👋</h1>
         <p>Entre ton nickname pour acceder a ton espace.</p>
 
@@ -73,7 +73,7 @@ export default function LoginPage() {
   style={{ marginTop: "0.5rem", fontSize: "0.85rem" }}
   onClick={() => router.push(`/register?code=${process.env.NEXT_PUBLIC_INVITE_CODE}`)}
 >
-  Pas encore de compte ? S inscrire
+  Pas encore de compte ? S'inscrire
 </button>
         <button className="btn" onClick={handleLogin} disabled={loading}>
           {loading ? "Verification..." : "Se connecter"}

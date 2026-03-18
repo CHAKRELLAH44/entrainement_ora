@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://blablagym.netlify.app"),
   title: "Bla Bla GYM",
-  description: "Ameliore ton expression orale en francais",
+  description: "Ameliore ton expression orale ",
   icons: {
     icon: "/favicon.svg",
   },

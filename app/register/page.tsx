@@ -108,12 +108,12 @@ export default function RegisterPage() {
   return (
     <div className="page-wrapper">
       <div className="card" style={{ textAlign: "center" }}>
-        <div className="logo">🎙️ BlaBlаGym</div>
+        <div className="logo">🎙️ BlaBlа Gym</div>
 
         <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>👋</div>
         <h2 style={{ marginBottom: "0.25rem" }}>Créer mon compte</h2>
         <p style={{ color: "var(--muted)", fontSize: "0.88rem", marginBottom: "1.5rem" }}>
-          Choisis ton nickname et ta langue
+          Choisis ton nickname 
         </p>
 
         {/* Nickname */}
@@ -163,7 +163,7 @@ export default function RegisterPage() {
           style={{ marginTop: "0.5rem" }}
           onClick={() => router.push("/login")}
         >
-          J ai déjà un compte
+          J'ai déjà un compte
         </button>
       </div>
     </div>

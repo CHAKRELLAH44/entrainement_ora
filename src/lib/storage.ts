@@ -17,6 +17,68 @@ export async function testSupabaseConnection(): Promise<boolean> {
   }
 }
 
+// Diagnostic pour expression_sessions
+export async function diagnoseExpressionTable(): Promise<any> {
+  console.log("🔍 [Diagnostic] Vérification de la table expression_sessions...");
+
+  try {
+    // Test 1: Vérifier que la table peut être lue
+    console.log("📖 Test 1: Lecture depuis expression_sessions...");
+    const { data: readData, error: readError } = await supabase
+      .from("expression_sessions")
+      .select("count")
+      .limit(1);
+
+    if (readError) {
+      console.error("❌ Erreur lecture:", readError);
+      return { tableExists: false, readError: readError.message };
+    }
+    console.log("✓ Lecture OK");
+
+    // Test 2: Essayer un insert test
+    console.log("✏️ Test 2: Insert test...");
+    const testId = `test-${Date.now()}`;
+    const { data: insertData, error: insertError } = await supabase
+      .from("expression_sessions")
+      .insert([
+        {
+          id: testId,
+          date: new Date().toLocaleDateString("fr-FR"),
+          media_id: "test",
+          media_type: "image",
+          media_url: "https://example.com/test.jpg",
+          timestamp: Date.now(),
+          user_nickname: "test_user",
+        },
+      ])
+      .select();
+
+    if (insertError) {
+      console.error("❌ Erreur insert:", insertError);
+      return {
+        tableExists: true,
+        readOk: true,
+        insertError: insertError.message,
+        code: insertError.code,
+      };
+    }
+
+    console.log("✓ Insert test OK, suppression du test...");
+    // Nettoyer le test
+    await supabase.from("expression_sessions").delete().eq("id", testId);
+
+    return {
+      tableExists: true,
+      readOk: true,
+      insertOk: true,
+      message: "✅ Tous les tests sont OK",
+    };
+  } catch (err) {
+    console.error("❌ Erreur diagnostic:", err);
+    return { error: String(err) };
+  }
+}
+
 const LAST_SESSION_KEY = "lastSession";
 const USER_KEY = "currentUser";
 
@@ -204,13 +266,14 @@ export async function saveExpressionSession(
   mediaUrl: string,
   audioUrl: string | null,
   text: string | null,
-  userNickname: string
+  userNickname: string,
+  correction: string | null = null
 ): Promise<string | null> {
   const id = `expr-${Date.now()}`;
   const now = new Date();
   const date = now.toLocaleDateString("fr-FR");
 
-  const { error } = await supabase.from("expression_sessions").insert({
+  const payload = {
     id,
     date,
     media_id: mediaId,
@@ -220,13 +283,38 @@ export async function saveExpressionSession(
     text: text,
     timestamp: Date.now(),
     user_nickname: userNickname,
-    correction: null, // Sera mis à jour après correction IA
+    correction: correction,
+  };
+
+  console.log("💾 [saveExpressionSession] Tentative d'insertion avec payload:", {
+    id,
+    userNickname,
+    mediaId,
+    hasAudio: !!audioUrl,
+    hasText: !!text,
+    hasCorrection: !!correction,
   });
 
+  const { data, error } = await supabase.from("expression_sessions").insert([payload]).select();
+
   if (error) {
-    console.error("Erreur saveExpressionSession:", error);
+    console.error("❌ [saveExpressionSession] Erreur Supabase complète:", {
+      error: error,
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      statusCode: (error as any).statusCode,
+    });
+    console.error("📋 Payload qui a échoué:", payload);
     return null;
   }
+
+  console.log("✅ [saveExpressionSession] Insertion réussie:", {
+    id,
+    data,
+  });
+  
   setLastSessionTimestamp();
   return id;
 }

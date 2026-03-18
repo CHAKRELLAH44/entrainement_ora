@@ -66,6 +66,11 @@ export default function SessionPage() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
+  const [confirmDeleteSession, setConfirmDeleteSession] = useState(false);
+  const [currentSessionId, setCurrentSessionId] = useState<string>("");
+  const [showResetInput, setShowResetInput] = useState(false);
+  const [resetCode, setResetCode] = useState("");
+  const [resetMsg, setResetMsg] = useState<string | null>(null);
 
   async function rollTopic() {
     setLoading(true);
@@ -123,10 +128,11 @@ export default function SessionPage() {
   }
 
   async function validateSession() {
-    setStep("saving");
-    const user = getCurrentUser() || "default";
-    const sessionId = Date.now().toString();
-    const ext = getFileExtension(mimeType);
+  setStep("saving");
+  const user = getCurrentUser() || "default";
+  const sessionId = Date.now().toString();
+  setCurrentSessionId(sessionId); // ← doit être APRÈS la déclaration de sessionId
+  const ext = getFileExtension(mimeType);
 
     let audioUrl: string | null = null;
     if (audioBlobRef.current) {
@@ -194,6 +200,24 @@ export default function SessionPage() {
   }
 
   const { emoji, msg } = getMessage(note);
+
+  async function deleteSession(id: string) {
+  const { supabase } = await import("@/lib/supabase");
+  await supabase.from("sessions").delete().eq("id", id);
+}
+
+function handleResetTimer() {
+  if (resetCode === "1644") {
+    localStorage.removeItem("lastSession");
+    setResetMsg("✅ Timer reinitialise !");
+    setResetCode("");
+    setTimeout(() => setResetMsg(null), 3000);
+  } else {
+    setResetMsg("❌ Code incorrect");
+    setTimeout(() => setResetMsg(null), 2000);
+  }
+}
+
 
   return (
     <div className="page-wrapper">
@@ -315,48 +339,146 @@ export default function SessionPage() {
       )}
 
       {step === "result" && (
-        <div className="card">
-          <div className="chip" style={{ display: "block", textAlign: "center" }}>Termine</div>
-          <div className="message-box">
-            <div className="emoji">{emoji}</div>
-            <div className="msg">{msg}</div>
-          </div>
-          {transcription && (
-            <div style={{ background: "var(--bg)", borderRadius: "14px", padding: "1.25rem", margin: "1rem 0", borderLeft: "4px solid #9A9A9A" }}>
-              <p style={{ fontSize: "0.75rem", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", marginBottom: "0.75rem" }}>
-                📝 Ce que tu as dit
+  <div className="card">
+    <div className="chip" style={{ display: "block", textAlign: "center" }}>Termine</div>
+    <div className="message-box">
+      <div className="emoji">{emoji}</div>
+      <div className="msg">{msg}</div>
+    </div>
+
+    {/* Sujet */}
+    <div className="topic-box">
+      <div className="label">🎤 Sujet</div>
+      <div className="text">{topic}</div>
+    </div>
+
+    {/* Audio */}
+    {audioPreviewUrl && (
+      <div style={{ margin: "1rem 0" }}>
+        <p className="audio-label">🎧 Reecouter</p>
+        <audio className="audio-player" controls playsInline preload="auto" src={audioPreviewUrl} />
+      </div>
+    )}
+
+    {/* Transcription + Correction masquable */}
+    {transcription && (
+      <div style={{ background: "var(--bg)", borderRadius: "14px", padding: "1.25rem", margin: "1rem 0", borderLeft: "4px solid #9A9A9A" }}>
+        <p style={{ fontSize: "0.75rem", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", marginBottom: "0.75rem" }}>
+          📝 Ce que tu as dit
+        </p>
+        <p style={{ fontSize: "0.9rem", color: "var(--text)", lineHeight: "1.7", fontStyle: "italic" }}>
+          {transcription}
+        </p>
+
+        {!showCorrection ? (
+          <button
+            onClick={() => setShowCorrection(true)}
+            style={{ marginTop: "1rem", width: "100%", padding: "0.75rem", borderRadius: "10px", border: "2px solid var(--btn)", background: "transparent", color: "var(--btn)", fontFamily: "Lato, sans-serif", fontSize: "0.9rem", fontWeight: "700", cursor: "pointer" }}
+          >
+            ✏️ Voir la correction
+          </button>
+        ) : (
+          <div style={{ marginTop: "1rem" }}>
+            <div style={{ height: "1px", background: "var(--border)", margin: "0.75rem 0" }} />
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
+              <p style={{ fontSize: "0.75rem", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--btn)", margin: 0 }}>
+                ✅ Texte corrige
               </p>
-              <p style={{ fontSize: "0.9rem", color: "var(--text)", lineHeight: "1.7", fontStyle: "italic" }}>
-                {transcription}
-              </p>
-              {!showCorrection && (
-                <button
-                  onClick={() => setShowCorrection(true)}
-                  style={{ marginTop: "1rem", width: "100%", padding: "0.75rem", borderRadius: "10px", border: "2px solid var(--btn)", background: "transparent", color: "var(--btn)", fontFamily: "Lato, sans-serif", fontSize: "0.9rem", fontWeight: "700", cursor: "pointer" }}
-                >
-                  ✏️ Voir la correction
-                </button>
-              )}
-              {showCorrection && (
-                <div style={{ marginTop: "1rem" }}>
-                  <div style={{ height: "1px", background: "var(--border)", margin: "0.75rem 0" }} />
-                  <p style={{ fontSize: "0.75rem", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--btn)", marginBottom: "0.75rem" }}>
-                    ✅ Texte corrige
-                  </p>
-                  {feedback ? (
-                    <p style={{ fontSize: "0.9rem", color: "var(--text)", lineHeight: "1.7" }}>{feedback}</p>
-                  ) : (
-                    <p style={{ fontSize: "0.85rem", color: "var(--muted)" }}>Correction non disponible.</p>
-                  )}
-                </div>
-              )}
+              <button
+                onClick={() => setShowCorrection(false)}
+                style={{ background: "none", border: "none", color: "var(--muted)", fontSize: "0.78rem", cursor: "pointer", fontFamily: "Lato, sans-serif" }}
+              >
+                Masquer ✕
+              </button>
             </div>
+            {feedback ? (
+              <p style={{ fontSize: "0.9rem", color: "var(--text)", lineHeight: "1.7" }}>{feedback}</p>
+            ) : (
+              <p style={{ fontSize: "0.85rem", color: "var(--muted)" }}>Correction non disponible.</p>
+            )}
+          </div>
+        )}
+      </div>
+    )}
+
+    {/* Supprimer la session */}
+    {!confirmDeleteSession ? (
+      <button
+        onClick={() => setConfirmDeleteSession(true)}
+        style={{ width: "100%", padding: "0.6rem", borderRadius: "10px", border: "1.5px solid #E74C3C", background: "transparent", color: "#E74C3C", fontFamily: "Lato, sans-serif", fontSize: "0.82rem", fontWeight: "700", cursor: "pointer", marginBottom: "0.5rem" }}
+      >
+        🗑️ 
+      </button>
+    ) : (
+      <div style={{ background: "#E74C3C11", border: "1.5px solid #E74C3C", borderRadius: "10px", padding: "0.75rem", marginBottom: "0.5rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <p style={{ fontSize: "0.82rem", color: "#E74C3C", margin: 0, fontWeight: "700" }}>
+          Supprimer cette seance ?
+        </p>
+        <div style={{ display: "flex", gap: "0.5rem" }}>
+          <button
+            onClick={async () => {
+              await deleteSession(currentSessionId);
+              router.push("/dashboard");
+            }}
+            style={{ padding: "0.3rem 0.75rem", borderRadius: "8px", border: "none", background: "#E74C3C", color: "#fff", fontFamily: "Lato, sans-serif", fontSize: "0.78rem", fontWeight: "700", cursor: "pointer" }}
+          >
+            Oui
+          </button>
+          <button
+            onClick={() => setConfirmDeleteSession(false)}
+            style={{ padding: "0.3rem 0.75rem", borderRadius: "8px", border: "1.5px solid var(--border)", background: "transparent", color: "var(--text)", fontFamily: "Lato, sans-serif", fontSize: "0.78rem", fontWeight: "700", cursor: "pointer" }}
+          >
+            Non
+          </button>
+        </div>
+      </div>
+    )}
+
+    {/* Reset timer */}
+    <div style={{ marginBottom: "0.75rem" }}>
+      <button
+        onClick={() => setShowResetInput(!showResetInput)}
+        style={{ background: "none", border: "none", color: "var(--muted)", fontSize: "0.78rem", cursor: "pointer", fontFamily: "Lato, sans-serif", width: "100%", textAlign: "center" }}
+      >
+        🔒 {showResetInput ? "Masquer" : "Reinitialiser le timer"}
+      </button>
+
+      {showResetInput && (
+        <div style={{ marginTop: "0.75rem", background: "var(--bg)", border: "1.5px solid var(--border)", borderRadius: "12px", padding: "1rem" }}>
+          <p style={{ fontSize: "0.8rem", color: "var(--muted)", margin: "0 0 0.75rem 0", textAlign: "center" }}>
+            Entre le code pour debloquer une nouvelle seance
+          </p>
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <input
+              type="password"
+              value={resetCode}
+              onChange={(e) => setResetCode(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleResetTimer()}
+              placeholder="Code..."
+              maxLength={4}
+              style={{ flex: 1, padding: "0.6rem 0.75rem", borderRadius: "8px", border: "1.5px solid var(--border)", background: "var(--card)", color: "var(--text)", fontFamily: "Lato, sans-serif", fontSize: "1rem", outline: "none", textAlign: "center", letterSpacing: "0.3em" }}
+            />
+            <button
+              onClick={handleResetTimer}
+              style={{ padding: "0.6rem 1rem", borderRadius: "8px", border: "none", background: "var(--btn)", color: "#fff", fontFamily: "Lato, sans-serif", fontSize: "0.85rem", fontWeight: "700", cursor: "pointer" }}
+            >
+              OK
+            </button>
+          </div>
+          {resetMsg && (
+            <p style={{ fontSize: "0.82rem", color: resetMsg.startsWith("✅") ? "#27AE60" : "#E74C3C", textAlign: "center", margin: "0.75rem 0 0", fontWeight: "700" }}>
+              {resetMsg}
+            </p>
           )}
-          <p style={{ textAlign: "center", marginTop: "0.5rem" }}>Seance enregistree !</p>
-          <button className="btn" onClick={() => router.push("/dashboard")}>Voir mes seances</button>
-          <button className="btn btn-ghost" onClick={() => router.push("/")}>Retour a l accueil</button>
         </div>
       )}
+    </div>
+
+    <p style={{ textAlign: "center", marginTop: "0.5rem" }}>Seance enregistree !</p>
+    <button className="btn" onClick={() => router.push("/dashboard")}>Voir mes seances</button>
+    <button className="btn btn-ghost" onClick={() => router.push("/")}>Retour a l accueil</button>
+  </div>
+)}
     </div>
   );
 }

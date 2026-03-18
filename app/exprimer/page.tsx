@@ -15,6 +15,7 @@ export default function ExpressionPage() {
   const [ready, setReady] = useState(false);
   const [hoursLeft, setHoursLeft] = useState(0);
   const [selectedMedia, setSelectedMedia] = useState<any>(null);
+  const [page, setPage] = useState<1 | 2>(1);
 
   useEffect(() => {
     const currentUser = getCurrentUser();
@@ -38,130 +39,209 @@ export default function ExpressionPage() {
   return (
     <div className="page-wrapper">
       <div className="card">
-        {/* Header */}
-        <div style={{ marginBottom: "1.5rem" }}>
-          <Link href="/" style={{ color: "var(--btn)", textDecoration: "none", fontSize: "0.85rem", fontWeight: "700", display: "flex", alignItems: "center", gap: "0.3rem" }}>
-            ← {t("back")}
-          </Link>
-        </div>
 
-        <h1 style={{ marginBottom: "0.5rem" }}>🎬 {t("express")}</h1>
-        <p style={{ color: "var(--muted)", marginBottom: "1.5rem" }}>{t("watchAndComment")}</p>
-
-        {/* Locked state */}
-        {hoursLeft > 0 && (
-          <div style={{ background: "#E74C3C11", border: "1.5px solid #E74C3C44", borderRadius: "12px", padding: "0.85rem 1rem", marginBottom: "1.5rem", display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <span style={{ fontSize: "1.5rem" }}>🔒</span>
-            <div>
-              <p style={{ fontWeight: "700", color: "#E74C3C", margin: 0, fontSize: "0.88rem" }}>{t("locked")}</p>
-              <p style={{ color: "var(--muted)", margin: "0.2rem 0 0", fontSize: "0.8rem" }}>
-                {t("comeBackIn")} {hoursLeft} {hoursLeft > 1 ? t("hours2") : t("hours")}
-              </p>
+        {/* ---- PAGE 1 : Rules ---- */}
+        {page === 1 && (
+          <>
+            <div className="nav-top">
+              <Link href="/" style={{ color: "var(--btn)", textDecoration: "none", fontSize: "0.85rem", fontWeight: "700", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                ← {t("back")}
+              </Link>
+              <div className="chip">1 / 2</div>
+              <div style={{ width: 24 }} />
             </div>
-          </div>
+
+            <h2>Rules diali bach tebda had session</h2>
+
+            {/* Main Rules */}
+            <ul className="tip-list">
+              <li>
+                <div className="tip-icon">🤲</div>
+                <div><strong>BESMILAH</strong> </div>
+              </li>
+              <li>
+                <div className="tip-icon">🎲</div>
+                <div>
+                  <strong>Sujet aléatoire</strong> — Image ou vidéo qui te parle
+                </div>
+              </li>
+              <li>
+                <div className="tip-icon">🧠</div>
+                <div>
+                  <strong>Réfléchis un peu </strong> — Prépare ce que tu veux dire
+                </div>
+              </li>
+              <li>
+                <div className="tip-icon">🗣️ </div>
+                <div>
+                  <strong>Exprime-toi</strong> — Parle ou écris ce que tu penses sans te censurer
+                </div>
+              </li>
+              <li>
+                <div className="tip-icon">🤖</div>
+                <div>
+                  <strong>Correction IA</strong> — Elle vas corriger quelque faute d expression c est tout 
+                </div>
+              </li>
+            </ul>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+              <button className="btn btn-ghost" onClick={() => router.push("/")}>
+                ← Retour
+              </button>
+              <button className="btn" onClick={() => setPage(2)}>
+                Commence →
+              </button>
+            </div>
+          </>
         )}
 
-        {/* Media Container */}
-        {selectedMedia && (
-          <div style={{ background: "var(--bg)", border: "1.5px solid var(--border)", borderRadius: "16px", padding: "1rem", marginBottom: "1.5rem", overflow: "hidden" }}>
-            {selectedMedia.type === "video" ? (
-              <div style={{ position: "relative", width: "100%", paddingBottom: "56.25%", height: 0, overflow: "hidden", borderRadius: "12px" }}>
-                <iframe
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: "100%",
-                    border: "none",
-                    borderRadius: "12px",
-                  }}
-                  src={`https://www.youtube.com/embed/${extractYouTubeId(selectedMedia.url)}?rel=0&modestbranding=1`}
-                  allowFullScreen
-                  title={selectedMedia.title}
-                />
+        {/* ---- PAGE 2 : Media & Mode Selection ---- */}
+        {page === 2 && (
+          <>
+            <div className="nav-top">
+              <button className="back-btn" onClick={() => setPage(1)}>
+                &larr;
+              </button>
+              <div className="chip">2 / 2</div>
+              <div style={{ width: 24 }} />
+            </div>
+
+            <h1 style={{ marginBottom: "0.5rem" }}>🎬 {t("express")}</h1>
+            <p style={{ color: "var(--muted)", marginBottom: "1.5rem" }}>{t("recordYourOpinion")}</p>
+
+            {/* Locked state */}
+            {hoursLeft > 0 && (
+              <div style={{ background: "#E74C3C11", border: "1.5px solid #E74C3C44", borderRadius: "12px", padding: "0.85rem 1rem", marginBottom: "1.5rem", display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                <span style={{ fontSize: "1.5rem" }}>🔒</span>
+                <div>
+                  <p style={{ fontWeight: "700", color: "#E74C3C", margin: 0, fontSize: "0.88rem" }}>{t("locked")}</p>
+                  <p style={{ color: "var(--muted)", margin: "0.2rem 0 0", fontSize: "0.8rem" }}>
+                    {t("comeBackIn")} {hoursLeft} {hoursLeft > 1 ? t("hours2") : t("hours")}
+                  </p>
+                </div>
               </div>
-            ) : (
-              <img
-                src={selectedMedia.url}
-                alt={selectedMedia.title}
-                style={{ width: "100%", borderRadius: "12px", maxHeight: "400px", objectFit: "cover" }}
-              />
             )}
-            <p style={{ color: "var(--muted)", fontSize: "0.8rem", marginTop: "0.75rem", marginBottom: 0 }}>
-              📍 {selectedMedia.title}
-            </p>
-          </div>
+
+            {/* Media Container */}
+            {selectedMedia && (
+              <div style={{ background: "var(--bg)", border: "1.5px solid var(--border)", borderRadius: "16px", padding: "1rem", marginBottom: "1.5rem", overflow: "hidden" }}>
+                {selectedMedia.type === "video" ? (
+                  <div style={{ position: "relative", width: "100%", paddingBottom: "56.25%", height: 0, overflow: "hidden", borderRadius: "12px" }}>
+                    <iframe
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        border: "none",
+                        borderRadius: "12px",
+                      }}
+                      src={`https://www.youtube.com/embed/${extractYouTubeId(selectedMedia.url)}?rel=0&modestbranding=1`}
+                      allowFullScreen
+                      title={selectedMedia.title}
+                    />
+                  </div>
+                ) : (
+                  <img
+                    src={selectedMedia.url}
+                    alt={selectedMedia.title}
+                    style={{ width: "100%", borderRadius: "12px", maxHeight: "400px", objectFit: "cover" }}
+                  />
+                )}
+                <p style={{ color: "var(--muted)", fontSize: "0.8rem", marginTop: "0.75rem", marginBottom: 0 }}>
+                  📍 {selectedMedia.title}
+                </p>
+              </div>
+            )}
+
+            {/* Mode Selection */}
+            <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1.5rem" }}>
+              <button
+                onClick={() => handleStartSession("speak")}
+                disabled={hoursLeft > 0}
+                style={{
+                  flex: 1,
+                  background: hoursLeft > 0 ? "var(--muted)" : "linear-gradient(135deg, #F98F0B, #FF6B00)",
+                  border: "none",
+                  borderRadius: "12px",
+                  padding: "0.85rem 1rem",
+                  color: hoursLeft > 0 ? "var(--muted-text)" : "#fff",
+                  fontWeight: "700",
+                  cursor: hoursLeft > 0 ? "not-allowed" : "pointer",
+                  transition: "all 0.3s ease",
+                  boxShadow: hoursLeft > 0 ? "none" : "0 4px 12px rgba(249, 143, 11, 0.3)",
+                  transform: hoursLeft > 0 ? "scale(1)" : "scale(1)",
+                }}
+                onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                  if (hoursLeft === 0) {
+                    e.currentTarget.style.transform = "scale(1.02)";
+                    e.currentTarget.style.boxShadow = "0 6px 16px rgba(249, 143, 11, 0.5)";
+                  }
+                }}
+                onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                  if (hoursLeft === 0) {
+                    e.currentTarget.style.transform = "scale(1)";
+                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(249, 143, 11, 0.3)";
+                  }
+                }}
+              >
+                🎙️ {t("speak")}
+              </button>
+              <button
+                onClick={() => handleStartSession("write")}
+                disabled={hoursLeft > 0}
+                style={{
+                  flex: 1,
+                  background: hoursLeft > 0 ? "var(--muted)" : "linear-gradient(135deg, #9B59B6, #8E44AD)",
+                  border: "none",
+                  borderRadius: "12px",
+                  padding: "0.85rem 1rem",
+                  color: hoursLeft > 0 ? "var(--muted-text)" : "#fff",
+                  fontWeight: "700",
+                  cursor: hoursLeft > 0 ? "not-allowed" : "pointer",
+                  transition: "all 0.3s ease",
+                  boxShadow: hoursLeft > 0 ? "none" : "0 4px 12px rgba(155, 89, 182, 0.3)",
+                  transform: hoursLeft > 0 ? "scale(1)" : "scale(1)",
+                }}
+                onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                  if (hoursLeft === 0) {
+                    e.currentTarget.style.transform = "scale(1.02)";
+                    e.currentTarget.style.boxShadow = "0 6px 16px rgba(155, 89, 182, 0.5)";
+                  }
+                }}
+                onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                  if (hoursLeft === 0) {
+                    e.currentTarget.style.transform = "scale(1)";
+                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(155, 89, 182, 0.3)";
+                  }
+                }}
+              >
+                ✍️ {t("write")}
+              </button>
+            </div>
+
+            {/* History Button */}
+            <button
+              onClick={() => router.push("/exprimer/historique")}
+              style={{
+                width: "100%",
+                background: "var(--card)",
+                border: "1.5px solid var(--border)",
+                borderRadius: "12px",
+                padding: "0.85rem 1rem",
+                color: "var(--text)",
+                fontWeight: "700",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+            >
+              📚 {t("myExpressions")}
+            </button>
+          </>
         )}
 
-        {/* Instructions */}
-        <div style={{ background: "linear-gradient(135deg, #E67E2222, #E67E2211)", border: "1.5px solid #E67E22", borderRadius: "12px", padding: "1rem", marginBottom: "1.5rem" }}>
-          <p style={{ fontWeight: "700", color: "var(--text)", margin: "0 0 0.5rem 0", fontSize: "0.9rem" }}>💬 {t("recordYourOpinion")}</p>
-          <ul style={{ margin: 0, paddingLeft: "1.5rem", color: "var(--muted)", fontSize: "0.85rem", lineHeight: "1.6" }}>
-            <li>Exprime-toi librement sur ce que tu vois</li>
-            <li>Choisis entre parler ou écrire</li>
-            <li>Correction automatique avec IA</li>
-            <li>Sauvegardé dans ton historique</li>
-          </ul>
-        </div>
-
-        {/* Action buttons */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", marginBottom: "1rem" }}>
-          <button
-            onClick={() => handleStartSession("speak")}
-            disabled={hoursLeft > 0}
-            style={{
-              background: hoursLeft > 0 ? "var(--bg)" : "linear-gradient(135deg, #F98F0B, #FF6B00)",
-              border: "none",
-              borderRadius: "12px",
-              padding: "0.85rem 1rem",
-              color: hoursLeft > 0 ? "var(--muted)" : "#fff",
-              fontWeight: "700",
-              cursor: hoursLeft > 0 ? "not-allowed" : "pointer",
-              opacity: hoursLeft > 0 ? 0.5 : 1,
-              transition: "all 0.2s",
-            }}
-          >
-            🎙️ {t("speak")}
-          </button>
-          <button
-            onClick={() => handleStartSession("write")}
-            disabled={hoursLeft > 0}
-            style={{
-              background: hoursLeft > 0 ? "var(--bg)" : "linear-gradient(135deg, #9B59B6, #8E44AD)",
-              border: "none",
-              borderRadius: "12px",
-              padding: "0.85rem 1rem",
-              color: hoursLeft > 0 ? "var(--muted)" : "#fff",
-              fontWeight: "700",
-              cursor: hoursLeft > 0 ? "not-allowed" : "pointer",
-              opacity: hoursLeft > 0 ? 0.5 : 1,
-              transition: "all 0.2s",
-            }}
-          >
-            ✍️ {t("write")}
-          </button>
-        </div>
-
-        <div style={{ height: "1px", background: "var(--border)", margin: "1.5rem 0" }} />
-
-        {/* History button */}
-        <button
-          onClick={() => router.push("/exprimer/historique")}
-          style={{
-            width: "100%",
-            background: "var(--card)",
-            border: "1.5px solid var(--border)",
-            borderRadius: "12px",
-            padding: "0.85rem 1rem",
-            color: "var(--text)",
-            fontWeight: "700",
-            cursor: "pointer",
-            transition: "all 0.2s",
-          }}
-        >
-          📚 {t("myExpressions")}
-        </button>
       </div>
     </div>
   );

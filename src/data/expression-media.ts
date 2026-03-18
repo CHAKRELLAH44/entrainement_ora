@@ -30,6 +30,13 @@ export const expressionMediaList: ExpressionMedia[] = [
     thumbnail: "https://img.youtube.com/vi/WMMTls5WSO4/maxresdefault.jpg",
   },
   {
+    id: "video-4",
+    type: "video",
+    title: "Vidéo d'inspiration 4",
+    url: "https://youtu.be/BqSxjmvXzzY?si=vPzLkPsX7WLf165Z",
+    thumbnail: "https://img.youtube.com/vi/BqSxjmvXzzY/maxresdefault.jpg",
+  },
+  {
     id: "image-1",
     type: "image",
     title: "Image d'inspiration 1",
@@ -46,6 +53,42 @@ export const expressionMediaList: ExpressionMedia[] = [
     type: "image",
     title: "Image d'inspiration 3",
     url: "/expression-images/image-3.jpg",
+  },
+  {
+    id: "image-4",
+    type: "image",
+    title: "Image d'inspiration 4",
+    url: "/expression-images/image-4.jpg",
+  },
+  {
+    id: "image-5",
+    type: "image",
+    title: "Image d'inspiration 5",
+    url: "/expression-images/image-5.jpg",
+  },
+  {
+    id: "image-6",
+    type: "image",
+    title: "Image d'inspiration 6",
+    url: "/expression-images/image-6.jpg",
+  },
+  {
+    id: "image-7",
+    type: "image",
+    title: "Image d'inspiration 7",
+    url: "/expression-images/image-7.jpg",
+  },
+  {
+    id: "image-8",
+    type: "image",
+    title: "Image d'inspiration 8",
+    url: "/expression-images/image-8.jpg",
+  },
+  {
+    id: "image-9",
+    type: "image",
+    title: "Image d'inspiration 9",
+    url: "/expression-images/image-9.jpg",
   },
 ];
 

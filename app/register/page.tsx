@@ -80,7 +80,7 @@ export default function RegisterPage() {
             Ce lien d invitation n est pas valide ou a expiré.
           </p>
           <p style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
-            Demande un nouveau lien a l administrateur.
+            Demande un nouveau lien a l'administrateur.
           </p>
           <button
             className="btn btn-ghost"

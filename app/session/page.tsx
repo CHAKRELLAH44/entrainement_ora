@@ -12,11 +12,14 @@ import {
   uploadAudio,
 } from "@/lib/storage";
 import { Session } from "@/types/session";
+import ThemePicker from "@/components/ThemePicker";
+import { getUserThemes } from "@/lib/themes-storage";
+import { getRandomTopic } from "@/lib/topics";
 
 type Step = "topic" | "think" | "speak" | "review" | "saving" | "result";
 
-const TIMER_OPTIONS = [60, 120, 180];
-const THINK_OPTIONS = [30 , 60];
+const TIMER_OPTIONS = [10, 60, 120, 180];
+const THINK_OPTIONS = [10 ,30 , 60];
 
 function getMessage(note: number): { emoji: string; msg: string } {
   if (note >= 8) return { emoji: "👏", msg: "Excellent travail ! Continue ainsi." };
@@ -71,19 +74,18 @@ export default function SessionPage() {
   const [showResetInput, setShowResetInput] = useState(false);
   const [resetCode, setResetCode] = useState("");
   const [resetMsg, setResetMsg] = useState<string | null>(null);
+  const [showThemes, setShowThemes] = useState(false);
+
 
   async function rollTopic() {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/random-topic?lang=${getUserLang()}`);
-      const data = await res.json();
-      setTopic(data.topic);
-    } catch {
-      setTopic("chno houwa l holm dialk ?");
-    } finally {
-      setLoading(false);
-    }
+  setLoading(true);
+  try {
+    const topic = getRandomTopic(getUserLang());
+    setTopic(topic);
+  } finally {
+    setLoading(false);
   }
+}
 
   async function startSpeaking() {
     try {
@@ -223,66 +225,112 @@ function handleResetTimer() {
     <div className="page-wrapper">
 
       {step === "topic" && (
-        <div className="card">
-          <div className="nav-top">
-            <button className="back-btn" onClick={() => router.push("/intro")}>&larr;</button>
-            <div className="chip">Sujet</div>
-            <div style={{ width: 24 }} />
+  <div className="card">
+    <div className="nav-top">
+      <button className="back-btn" onClick={() => router.push("/intro")}>&larr;</button>
+      <div className="chip">Sujet</div>
+      <div style={{ width: 24 }} />
+    </div>
+
+    {!topic ? (
+      /* ── AVANT le tirage ── */
+      <>
+        <h2>Tire ton sujet</h2>
+        <p>Lance le de pour decouvrir ton sujet du jour.</p>
+
+        {/* Thèmes actifs */}
+        <div style={{ marginBottom: "1rem" }}>
+          <p style={{ fontSize: "0.75rem", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", marginBottom: "0.6rem" }}>
+            🎯 Tes thèmes actifs
+          </p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginBottom: "0.75rem" }}>
+            {getUserThemes().map((theme) => {
+              const THEMES = [
+                { code: "tech", label: "Tech", emoji: "💻" },
+                { code: "sport", label: "Sport", emoji: "⚽" },
+                { code: "philosophie", label: "Philosophie", emoji: "🧠" },
+                { code: "societe", label: "Société", emoji: "🌍" },
+                { code: "amour", label: "Amour", emoji: "❤️" },
+                { code: "culture", label: "Culture", emoji: "🎭" },
+              ];
+              const found = THEMES.find((t) => t.code === theme);
+              if (!found) return null;
+              return (
+                <span key={theme} style={{ fontSize: "0.72rem", background: "#F98F0B22", color: "var(--btn)", border: "1px solid var(--btn)", borderRadius: "20px", padding: "0.2rem 0.6rem", fontWeight: "700" }}>
+                  {found.emoji} {found.label}
+                </span>
+              );
+            })}
           </div>
-          <h2>Tire ton sujet</h2>
-          <p>Lance le de pour decouvrir ton sujet du jour.</p>
-          <button className="btn btn-outline" onClick={rollTopic} disabled={loading}>
-            {loading ? "..." : "🎲 Lancer le de"}
+          <button
+            onClick={() => setShowThemes(true)}
+            style={{ width: "100%", padding: "0.5rem", borderRadius: "10px", border: "1.5px solid var(--border)", background: "transparent", color: "var(--muted)", fontFamily: "Lato, sans-serif", fontSize: "0.78rem", fontWeight: "700", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem" }}
+          >
+            ✏️ Modifier les thèmes
           </button>
-          {topic && (
-            <>
-              <div className="topic-box">
-                <div className="label">🎤 Sujet du jour</div>
-                <div className="text">{topic}</div>
-              </div>
-              <div style={{ margin: "1.25rem 0" }}>
-                <p style={{ fontSize: "0.75rem", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", marginBottom: "0.75rem" }}>
-                  🧠 Temps de reflexion
-                </p>
-                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-                  {THINK_OPTIONS.map((sec) => (
-                    <button key={sec} onClick={() => setThinkDuration(sec)} style={{
-                      padding: "0.5rem 1rem", borderRadius: "100px",
-                      border: thinkDuration === sec ? "2px solid var(--btn)" : "1.5px solid var(--border)",
-                      background: thinkDuration === sec ? "var(--btn)" : "transparent",
-                      color: thinkDuration === sec ? "#fff" : "var(--muted)",
-                      fontFamily: "Lato, sans-serif", fontSize: "0.9rem", fontWeight: "700",
-                      cursor: "pointer", transition: "all 0.2s",
-                    }}>
-                      {sec}s
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div style={{ margin: "1.25rem 0" }}>
-                <p style={{ fontSize: "0.75rem", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", marginBottom: "0.75rem" }}>
-                  ⏱️ Temps de parole
-                </p>
-                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-                  {TIMER_OPTIONS.map((sec) => (
-                    <button key={sec} onClick={() => setSpeakDuration(sec)} style={{
-                      padding: "0.5rem 1rem", borderRadius: "100px",
-                      border: speakDuration === sec ? "2px solid var(--btn)" : "1.5px solid var(--border)",
-                      background: speakDuration === sec ? "var(--btn)" : "transparent",
-                      color: speakDuration === sec ? "#fff" : "var(--muted)",
-                      fontFamily: "Lato, sans-serif", fontSize: "0.9rem", fontWeight: "700",
-                      cursor: "pointer", transition: "all 0.2s",
-                    }}>
-                      {sec}s
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <button className="btn" onClick={() => setStep("think")}>Demarrer</button>
-            </>
-          )}
         </div>
-      )}
+
+        {showThemes && (
+          <ThemePicker onClose={() => setShowThemes(false)} />
+        )}
+
+        <button className="btn btn-outline" onClick={rollTopic} disabled={loading}>
+          {loading ? "..." : "🎲 Lancer le de"}
+        </button>
+      </>
+    ) : (
+      /* ── APRÈS le tirage ── */
+      <>
+        <div className="topic-box">
+          <div className="label">🎤 Sujet du jour</div>
+          <div className="text">{topic}</div>
+        </div>
+
+        <div style={{ margin: "1.25rem 0" }}>
+          <p style={{ fontSize: "0.75rem", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", marginBottom: "0.75rem" }}>
+            🧠 Temps de reflexion
+          </p>
+          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+            {THINK_OPTIONS.map((sec) => (
+              <button key={sec} onClick={() => setThinkDuration(sec)} style={{
+                padding: "0.5rem 1rem", borderRadius: "100px",
+                border: thinkDuration === sec ? "2px solid var(--btn)" : "1.5px solid var(--border)",
+                background: thinkDuration === sec ? "var(--btn)" : "transparent",
+                color: thinkDuration === sec ? "#fff" : "var(--muted)",
+                fontFamily: "Lato, sans-serif", fontSize: "0.9rem", fontWeight: "700",
+                cursor: "pointer", transition: "all 0.2s",
+              }}>
+                {sec}s
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ margin: "1.25rem 0" }}>
+          <p style={{ fontSize: "0.75rem", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)", marginBottom: "0.75rem" }}>
+            ⏱️ Temps de parole
+          </p>
+          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+            {TIMER_OPTIONS.map((sec) => (
+              <button key={sec} onClick={() => setSpeakDuration(sec)} style={{
+                padding: "0.5rem 1rem", borderRadius: "100px",
+                border: speakDuration === sec ? "2px solid var(--btn)" : "1.5px solid var(--border)",
+                background: speakDuration === sec ? "var(--btn)" : "transparent",
+                color: speakDuration === sec ? "#fff" : "var(--muted)",
+                fontFamily: "Lato, sans-serif", fontSize: "0.9rem", fontWeight: "700",
+                cursor: "pointer", transition: "all 0.2s",
+              }}>
+                {sec}s
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <button className="btn" onClick={() => setStep("think")}>Demarrer</button>
+      </>
+    )}
+  </div>
+)}
 
       {step === "think" && (
         <div className="card" style={{ textAlign: "center" }}>

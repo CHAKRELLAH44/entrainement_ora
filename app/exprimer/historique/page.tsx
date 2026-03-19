@@ -69,7 +69,7 @@ export default function ExpressionHistoryPage() {
 
   const handleResetTimer = () => {
     if (resetCode === "1644") {
-      localStorage.removeItem("lastSession");
+      localStorage.removeItem("lastExpression");
       setResetMsg("✅ Timer réinitialisé !");
       setResetCode("");
       setTimeout(() => setResetMsg(null), 3000);

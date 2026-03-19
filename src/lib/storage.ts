@@ -80,6 +80,7 @@ export async function diagnoseExpressionTable(): Promise<any> {
 }
 
 const LAST_SESSION_KEY = "lastSession";
+const LAST_EXPRESSION_KEY = "lastExpression";
 const USER_KEY = "currentUser";
 
 export function getCurrentUser(): string | null {
@@ -315,8 +316,25 @@ export async function saveExpressionSession(
     data,
   });
   
-  setLastSessionTimestamp();
+  setLastExpressionTimestamp();
   return id;
+}
+
+export function getLastExpressionTimestamp(): number {
+  if (typeof window === "undefined") return 0;
+  return parseInt(localStorage.getItem(LAST_EXPRESSION_KEY) || "0", 10);
+}
+
+export function setLastExpressionTimestamp(): void {
+  localStorage.setItem(LAST_EXPRESSION_KEY, Date.now().toString());
+}
+
+export function getHoursUntilNextExpression(): number {
+  const last = getLastExpressionTimestamp();
+  if (!last) return 0;
+  const diff = 24 * 60 * 60 * 1000 - (Date.now() - last);
+  if (diff <= 0) return 0;
+  return Math.ceil(diff / (60 * 60 * 1000));
 }
 
 export async function getExpressionSessions(userNickname: string): Promise<any[]> {

@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getCurrentUser, getHoursUntilNextSession, logoutUser, getSessions, calculateStreak, testSupabaseConnection } from "@/lib/storage";
 import { useLang, setUserLang, getLangFlag, getLangLabel, Lang } from "@/lib/i18n";
+import { getHoursUntilNextExpression } from "@/lib/storage";
 
 const LANGS: Lang[] = ["fr", "en", "es"];
 
@@ -13,6 +14,7 @@ export default function AccueilPage() {
   const router = useRouter();
   const { t, lang } = useLang();
   const [hoursLeft, setHoursLeft] = useState(0);
+  const [hoursLeftExpr, setHoursLeftExpr] = useState(0)
   const [user, setUser] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [expandedFeature, setExpandedFeature] = useState<string | null>(null);
@@ -25,6 +27,7 @@ export default function AccueilPage() {
     if (!currentUser) { router.push("/login"); return; }
     setUser(currentUser);
     setHoursLeft(getHoursUntilNextSession());
+    setHoursLeftExpr(getHoursUntilNextExpression());
 
     // Test de connexion Supabase
     testSupabaseConnection();
@@ -146,19 +149,23 @@ export default function AccueilPage() {
           </div>
 
           <div
-  onClick={() => hoursLeft === 0 && router.push("/exprimer")}
-  style={{ background: hoursLeft > 0 ? "var(--bg)" : "linear-gradient(135deg, #E67E2222, #E67E2211)", border: hoursLeft > 0 ? "1.5px solid var(--border)" : "1.5px solid #E67E22", borderRadius: "16px", padding: "1.25rem 1rem", textAlign: "center", cursor: hoursLeft > 0 ? "not-allowed" : "pointer", opacity: hoursLeft > 0 ? 0.5 : 1, transition: "all 0.2s", position: "relative" }}
+  onClick={() => hoursLeftExpr === 0 && router.push("/exprimer")}
+  style={{ background: hoursLeftExpr > 0 ? "var(--bg)" : "linear-gradient(135deg, #E67E2222, #E67E2211)", border: hoursLeftExpr > 0 ? "1.5px solid var(--border)" : "1.5px solid #E67E22", borderRadius: "16px", padding: "1.25rem 1rem", textAlign: "center", cursor: hoursLeftExpr > 0 ? "not-allowed" : "pointer", opacity: hoursLeftExpr > 0 ? 0.5 : 1, transition: "all 0.2s", position: "relative" }}
 >
   {/* Badge NEW */}
-  <div style={{ position: "absolute", top: "-10px", left: "-10px", background: "linear-gradient(135deg, #2e2c9b, #00fff2)", borderRadius: "20px", padding: "0.2rem 0.55rem", fontSize: "0.65rem", fontWeight: "700", color: "#fff", boxShadow: "0 2px 8px #E67E2255", letterSpacing: "0.05em" }}>
+  <div style={{ position: "absolute", top: "-10px", left: "-10px", background: "linear-gradient(135deg, #E67E22, #D35400)", borderRadius: "20px", padding: "0.2rem 0.55rem", fontSize: "0.65rem", fontWeight: "700", color: "#fff", boxShadow: "0 2px 8px #E67E2255", letterSpacing: "0.05em" }}>
     ✨ NEW
   </div>
   <div style={{ fontSize: "2rem", marginBottom: "0.4rem" }}>🎬</div>
   <p style={{ fontWeight: "700", color: "var(--text)", margin: 0, fontSize: "0.95rem" }}>{t("express")}</p>
-  {hoursLeft > 0 ? (
-    <p style={{ fontSize: "0.7rem", color: "#E74C3C", margin: "0.4rem 0 0", fontWeight: "700" }}>🔒 {hoursLeft}{t("lockedHours")}</p>
+  {hoursLeftExpr > 0 ? (
+    <p style={{ fontSize: "0.7rem", color: "#E74C3C", margin: "0.4rem 0 0", fontWeight: "700" }}>
+      🔒 {hoursLeftExpr}{t("lockedHours")}
+    </p>
   ) : (
-    <p style={{ fontSize: "0.7rem", color: "#E67E22", margin: "0.4rem 0 0" }}>{t("available")} ✓</p>
+    <p style={{ fontSize: "0.7rem", color: "#E67E22", margin: "0.4rem 0 0" }}>
+      {t("available")} ✓
+    </p>
   )}
 </div>
         </div>

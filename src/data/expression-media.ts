@@ -37,6 +37,20 @@ export const expressionMediaList: ExpressionMedia[] = [
     thumbnail: "https://img.youtube.com/vi/BqSxjmvXzzY/maxresdefault.jpg",
   },
   {
+    id: "video-5",
+    type: "video",
+    title: "Vidéo d'inspiration ",
+    url: "https://youtu.be/zkTf0LmDqKI?si=X4oeNfAaEt_Cc2y7",
+    thumbnail: "https://img.youtube.com/vi/zkTf0LmDqKI/maxresdefault.jpg",
+  },
+   {
+    id: "video-5",
+    type: "video",
+    title: "Vidéo d'inspiration ",
+    url: "https://youtu.be/OWahck7qRZs?si=jvrditQxCg7KuGOm",
+    thumbnail: "https://img.youtube.com/vi/OWahck7qRZs/maxresdefault.jpg",
+  },
+  {
     id: "image-1",
     type: "image",
     title: "Image d'inspiration ",

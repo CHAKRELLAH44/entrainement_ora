@@ -33,7 +33,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="page-wrapper">
+    <div className="page-wrapper"> 
       <div className="card" style={{ textAlign: "center" }}>
         <div className="logo">🎙️ BlaBlа Gym</div>
         <h1>MAR7BAAA 👋</h1>

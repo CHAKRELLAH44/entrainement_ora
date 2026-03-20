@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { getCurrentUser, getHoursUntilNextSession } from "@/lib/storage";
+import { getCurrentUser, getHoursUntilNextExpression, getHoursUntilNextSession } from "@/lib/storage";
 import { useLang } from "@/lib/i18n";
 import { expressionMediaList, getRandomMedia } from "@/data/expression-media";
 
@@ -24,7 +24,7 @@ export default function ExpressionPage() {
       return;
     }
     setUser(currentUser);
-    setHoursLeft(getHoursUntilNextSession());
+    setHoursLeft(getHoursUntilNextExpression());
     setSelectedMedia(getRandomMedia());
     setReady(true);
   }, [router]);
